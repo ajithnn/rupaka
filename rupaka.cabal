@@ -28,6 +28,8 @@ library
       Config
       Lib
       THEnv
+      Types
+      Validations
   other-modules:
       Paths_rupaka
   hs-source-dirs:
