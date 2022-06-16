@@ -26,8 +26,6 @@ source-repository head
 library
   exposed-modules:
       Config
-      Lib
-      THEnv
       Types
       Validations
   other-modules:
@@ -40,6 +38,7 @@ library
     , bytestring
     , containers
     , file-embed
+    , optparse-applicative
     , parsec
     , template-haskell
     , text
@@ -58,6 +57,7 @@ executable rupaka-exe
     , bytestring
     , containers
     , file-embed
+    , optparse-applicative
     , parsec
     , rupaka
     , template-haskell

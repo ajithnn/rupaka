@@ -32,6 +32,7 @@ library:
     - file-embed
     - bytestring
     - aeson
+    - optparse-applicative
 
 executables:
   rupaka-exe:
@@ -50,6 +51,7 @@ executables:
     - file-embed
     - bytestring
     - aeson
+    - optparse-applicative
 
 tests:
   rupaka-test:

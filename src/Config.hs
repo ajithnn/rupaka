@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Config where
 import           Data.FileEmbed
@@ -12,26 +10,7 @@ import           Language.Haskell.TH
 import           Language.Haskell.TH.Quote
 import           Text.Parsec                   as P
 import           Text.ParserCombinators.Parsec
-import           THEnv
 import           Types
-
-valid :: QuasiQuoter
-valid = QuasiQuoter {
-    quoteExp  = compileValid
-  , quotePat  = notHandled "patterns"
-  , quoteType = notHandled "types"
-  , quoteDec  = notHandled "declarations"
-  }
-  where notHandled things = error $
-          things ++ " are not handled by the regex quasiquoter."
-
-filePath = $(lookupCompileEnvExp "CONFIG_FILEPATH")
-
-compileValid :: String -> Q Exp
-compileValid s =
-  case P.parse validationParser "" s of
-    Left  err         -> fail (show err)
-    Right validations -> [e| validations |]
 
 configParser :: Parsec String () [Config]
 configParser = cfgs
@@ -57,16 +36,16 @@ validationParser = validations
           conds = oneOf ['>','<','=']
           cond = fromString <$> (many space >> many conds)
 
-validationsFromFile :: Maybe FilePath -> Q Exp
-validationsFromFile (Just rawFp)= do
-  fp <- makeRelativeToProject rawFp
-  contents <- runIO $ readFile fp
-  compileValid contents
-validationsFromFile Nothing = compileValid ""
-
 compileConfig :: FilePath -> IO (Either String [Config])
 compileConfig fp = do
   s <- readFile fp
   case P.parse configParser "" s of
     Left  err     -> return $ Left (show err)
     Right configs -> return $ Right configs
+
+compileValid :: FilePath -> IO (Either String [Validation])
+compileValid fp = do
+  s <- readFile fp
+  case P.parse validationParser "" s of
+    Left  err         -> return $ Left (show err)
+    Right validations -> return $ Right validations

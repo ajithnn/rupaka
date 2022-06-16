@@ -1,9 +1,8 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE TemplateHaskellQuotes #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Types where
 
-import           Data.Aeson                    hiding (Key, Value)
+import           Data.Aeson                 hiding (Key, Value)
 import           Data.Maybe
 import           Data.String
 import           GHC.Generics
@@ -18,6 +17,12 @@ data Pair = Term Key Value deriving (Show,Generic)
 data Validation = Validation Key Condition Value deriving (Show,Generic)
 data Condition = CGT | CLT | CLE | CGE | CEQ | None deriving (Eq,Ord,Generic)
 newtype KvPair = KvPair (Key,Value) deriving (Show,Eq,Ord,Generic)
+
+data InputOptions = InputOptions{
+  configpath     :: FilePath,
+  validationPath :: FilePath,
+  outputPath     :: FilePath
+}
 
 instance IsString Condition where
   fromString c = case c of
@@ -39,20 +44,3 @@ instance Show Condition where
 instance ToJSON Config where
 instance ToJSON Pair where
 instance ToJSON Condition where
-
-instance Lift Config where
-  lift (Config ps) = appsE [conE 'Config, lift ps]
-
-instance Lift Pair where
-  lift (Term k v)         = appsE [conE 'Term, lift k,lift v]
-
-instance Lift Validation where
-  lift (Validation k c v) = appsE [conE 'Validation, lift k,lift c,lift v]
-
-instance Lift Condition where
-  lift CGT  = conE 'CGT
-  lift CLT  = conE 'CLT
-  lift CLE  = conE 'CLE
-  lift CGE  = conE 'CGE
-  lift CEQ  = conE 'CEQ
-  lift None = conE 'None

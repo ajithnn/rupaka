@@ -1,4 +1,3 @@
-
 module Validations where
 
 import           Config
@@ -14,15 +13,19 @@ import           System.Environment
 import           Text.Read             as T (readMaybe)
 import           Types
 
-validate :: [Validation] -> [Config] -> Either String Bool
-validate validations configs = validated
+validate :: Either String [Validation] -> Either String [Config] -> Either String Bool
+validate (Left er) (Left e) = Left (mconcat [er," : ",e])
+validate (Left e) _ = Left e
+validate _ (Left e) = Left e
+validate (Right validations) (Right configs) = validated
   where cmap = M.fromList $ Prelude.map (\(Config (Term k v)) -> (k,v)) configs
         validated = Prelude.foldl (\acc v -> combineValidations (validator' v cmap) acc) (Right True) validations
 
 combineValidations :: Either String Bool -> Either String Bool -> Either String Bool
+combineValidations (Left er) (Left e)  = Left (mconcat [er, " : ",e])
 combineValidations _ (Left error)      = Left error
-combineValidations (Right v) (Right b) = Right (v && b)
 combineValidations (Left error) _      = Left error
+combineValidations (Right v) (Right b) = Right (v && b)
 
 readValue :: Value -> Int
 readValue v = fromMaybe 0 $ T.readMaybe v

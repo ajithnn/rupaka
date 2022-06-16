@@ -8,28 +8,48 @@ import           Config
 import           Data.Aeson                 (encodeFile)
 import           Data.ByteString            as B hiding (readFile)
 import           Data.ByteString.Char8      as BC hiding (readFile)
+import           Data.Either
 import           Data.Map                   as M
 import           Data.Maybe
+import           Data.Semigroup             ((<>))
 import           Language.Haskell.TH.Syntax
+import           Options.Applicative
 import           System.Environment
 import           Text.Read                  as T (readMaybe)
 import           Types
 import           Validations
 
-validations :: [Validation]
-validations = $(validationsFromFile Config.filePath)
-
 main :: IO ()
-main = do
-  args <- getArgs
-  let outputPath = Prelude.head args
-  let cfgPath = args !! 1
+main = handleInput =<< execParser opts
+  where opts = info (inputOptions <**> helper)
+                ( fullDesc
+                <> progDesc "Parse a config and validation file and return errors or JSON"
+                <> header "rupaka - Config parser / validator" )
+
+inputOptions :: Parser InputOptions
+inputOptions = InputOptions
+                <$> strOption
+                    ( long "config"
+                    <> short 'c'
+                    <> metavar "CONFIG FILE PATH"
+                    <> help "Filepath for the config file to parse" )
+                <*> strOption
+                    ( long "validation"
+                    <> short 'v'
+                    <> metavar "VALIDATION FILE PATH"
+                    <> help "Filepath for validation file to parse")
+                <*> strOption
+                    ( long "output"
+                    <> short 'o'
+                    <> metavar "OUTPUT FILE PATH"
+                    <> help "Filepath for output file" )
+
+handleInput :: InputOptions -> IO()
+handleInput (InputOptions cfgPath vldPath outPath) = do
+  validations <- compileValid vldPath
   configs <- compileConfig cfgPath
-  case configs of
+  case validate validations configs of
+    Right _ -> do
+      encodeFile outPath $ M.fromList (Prelude.map (\(Config (Term k v)) -> (k,v)) (fromRight [] configs))
+      print "Generated Json Configurations"
     Left e -> print e
-    Right cfgs ->
-      case validate validations cfgs of
-        Right _ -> do
-          encodeFile outputPath $ M.fromList (Prelude.map (\(Config (Term k v)) -> (k,v)) cfgs)
-          print "Generated Json Configurations"
-        Left e -> print e
