@@ -33,6 +33,8 @@ library:
     - bytestring
     - aeson
     - optparse-applicative
+    - regex-tdfa
+    - regex-base
 
 executables:
   rupaka-exe:
@@ -52,6 +54,8 @@ executables:
     - bytestring
     - aeson
     - optparse-applicative
+    - regex-tdfa
+    - regex-base
 
 tests:
   rupaka-test:

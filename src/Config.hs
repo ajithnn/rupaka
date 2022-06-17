@@ -31,16 +31,21 @@ configParser = manyTill cfgs eof
 
 validationParser :: Parsec String () [Validation]
 validationParser = manyTill validations eof
-  where validationInt = P.try validationType >> ValidationI <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try values <* eol)
-        validations = validationInt
-        validationType = many space >> string "vi"
+  where validationInt = P.try validationTypeI >> ValidationI <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try values <* eol)
+        validationStr = P.try validationTypeS >> ValidationS <$> P.try keys <*> P.try strCond <*> (many space >> P.try strValues <* eol)
+        validations = P.try validationInt <|> P.try validationStr
+        validationTypeI = many space >> string "vi"
+        validationTypeS = many space >> string "vs"
         eol =  P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
         keys  = many space >> many word
         values  = many nums
+        strValues = many word
         nums = oneOf ['0'..'9']
-        word = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.'])
+        word = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$'])
         conds = oneOf ['>','<','=']
+        strConds = many space >> string "matches"
         cond = fromString <$> (many space >> many conds)
+        strCond = fromString <$> strConds
 
 compileConfig :: FilePath -> IO (Either String [Config])
 compileConfig fp = do

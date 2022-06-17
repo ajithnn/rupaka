@@ -11,6 +11,8 @@ import           Data.Maybe
 import           Language.Haskell.TH
 import           System.Environment
 import           Text.Read             as T (readMaybe)
+import qualified Text.Regex.Base       as TRB
+import qualified Text.Regex.TDFA       as TRT ((=~))
 import           Types
 import           Util
 
@@ -30,18 +32,21 @@ combineValidations (Right v) (Right b) = Right (v && b)
 
 validator' :: Validation -> Map Key ValueS -> Either String Bool
 validator' (ValidationS k c v) cfgM = resp
-  where res = getOperator c (readNum (cfgM ! k)) (readNum v)
+  where res = case c of
+                MATCHES -> (cfgM ! k) TRT.=~ v :: Bool
+                _       -> False
         resp  | res = Right True
-              | otherwise = Left $ mconcat ["Validation failed for: ", k , show c, v]
+              | otherwise = Left $ mconcat ["Validation failed for: ", k ," ",show c," ", v]
 validator' (ValidationI k c v) cfgM = resp
   where res = getOperator c (readNum (cfgM ! k)) v
         resp  | res = Right True
-              | otherwise = Left $ mconcat ["Validation failed for: ", k , show c, show v]
+              | otherwise = Left $ mconcat ["Validation failed for: ", k , " ",show c, " ",show v]
 
 getOperator :: Condition -> (Int -> Int -> Bool)
-getOperator CGT  = (>)
-getOperator CLT  = (<)
-getOperator CLE  = (<=)
-getOperator CGE  = (>=)
-getOperator CEQ  = (==)
-getOperator None = \_ _ -> False
+getOperator CGT = (>)
+getOperator CLT = (<)
+getOperator CLE = (<=)
+getOperator CGE = (>=)
+getOperator CEQ = (==)
+getOperator _   = \_ _ -> False
+
