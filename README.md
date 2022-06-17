@@ -1,40 +1,27 @@
 # Rupaka (WIP)
 
+## Format Description 
 
-## Stages - Design A
-
-
-### Generate Validator
-
-1. Load Validation rules file during compilation 
-2. Generate binary with validations built-in 
-
-
-## Validate Configurations 
-
-1. Pass configuration files to the validator binary 
-2. Validates and converts the config to reqd output formats
+Config Format has the following 
+  - d represents a define row which defines a Key -> Value pair 
+  - di | ds represents additional type information on the define row , di - Integer Value , ds - String value
+  - Similarly v represents a validation row and vi / vs  represets the type of the value 
+  - A definition row has the format <d(i|s)> [Key] : [Value with Spaces] 
+  - A validation row has the format <v(i|s)> [Key]  [Conditional (<|<=|>=|>|==)] [Limit value]
 
 
-## Stages - Design B
+## Example Config 
 
+```
+di threads : 10
+di users : 3
+di usertoken : asdfghjkl
+```
 
-### Generate configs
+## Example Validation 
 
+```
+vi threads < 15
+vi users > 1
 
-1. Use compile binary to take validations and configs and arguments.
-2. Parse Validations and configs. 
-3. Validate the configs as required.
-4. Convert to output format as required. 
-
-
-
-## Stages - Design C
-
-
-### Run gRPC service 
-
-1. Run a gRPC service which exposes 2 functions A,B 
-2. function 'A' takes a validation file and generates a validatorID 
-3. function 'B' takes a validatorID and configuration file , and returns an error or output json 
-
+```
