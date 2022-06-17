@@ -15,7 +15,7 @@ Config Format has the following
 ```
 di threads : 10
 di users : 3
-di usertoken : asdfghjkl
+ds usertoken : asdfghjkl
 ```
 
 ## Example Validation 
