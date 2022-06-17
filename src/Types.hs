@@ -10,13 +10,13 @@ import           Language.Haskell.TH.Lib
 import           Language.Haskell.TH.Syntax
 
 type Key = String
-type Value = String
+type ValueS = String
+type ValueI = Int
 
 newtype Config = Config Pair deriving (Show,Generic)
-data Pair = Term Key Value deriving (Show,Generic)
-data Validation = Validation Key Condition Value deriving (Show,Generic)
+data Pair = TermS Key ValueS | TermI Key ValueI deriving (Show,Generic)
+data Validation = ValidationS Key Condition ValueS | ValidationI Key Condition ValueI deriving (Show,Generic)
 data Condition = CGT | CLT | CLE | CGE | CEQ | None deriving (Eq,Ord,Generic)
-newtype KvPair = KvPair (Key,Value) deriving (Show,Eq,Ord,Generic)
 
 data InputOptions = InputOptions{
   configpath     :: FilePath,

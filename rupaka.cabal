@@ -27,6 +27,7 @@ library
   exposed-modules:
       Config
       Types
+      Util
       Validations
   other-modules:
       Paths_rupaka

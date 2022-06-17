@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Main where
 
@@ -17,6 +15,7 @@ import           Options.Applicative
 import           System.Environment
 import           Text.Read                  as T (readMaybe)
 import           Types
+import           Util
 import           Validations
 
 main :: IO ()
@@ -50,6 +49,8 @@ handleInput (InputOptions cfgPath vldPath outPath) = do
   configs <- compileConfig cfgPath
   case validate validations configs of
     Right _ -> do
-      encodeFile outPath $ M.fromList (Prelude.map (\(Config (Term k v)) -> (k,v)) (fromRight [] configs))
+      encodeFile outPath $ M.fromList (Prelude.map extractTerms (fromRight [] configs))
       print "Generated Json Configurations"
     Left e -> print e
+
+
