@@ -25,3 +25,8 @@ vi threads < 15
 vi users > 1
 
 ```
+## Run 
+
+```
+./rupaka -c "example.cfg" -v "example.vld" -o "output.json"
+``` 
