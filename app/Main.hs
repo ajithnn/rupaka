@@ -12,7 +12,9 @@ import           Data.Maybe
 import           Data.Semigroup             ((<>))
 import           Language.Haskell.TH.Syntax
 import           Options.Applicative
-import           System.Environment
+import           System.Log.Handler         (setFormatter)
+import           System.Log.Handler.Simple
+import           System.Log.Logger
 import           Text.Read                  as T (readMaybe)
 import           Types
 import           Util
@@ -45,12 +47,13 @@ inputOptions = InputOptions
 
 handleInput :: InputOptions -> IO()
 handleInput (InputOptions cfgPath vldPath outPath) = do
+  removeIfExists "parse.err"
+  eh <- fileHandler "parse.err" INFO
+  updateGlobalLogger "rupaka.Main.Err" (addHandler eh)
   validations <- compileValid vldPath
   configs <- compileConfig cfgPath
   case validate validations configs of
     Right _ -> do
-      encodeFile outPath $ M.fromList (Prelude.map extractTerms (fromRight [] configs))
+      encodeFile outPath (Output (fromRight [] configs))
       print "Generated Json Configurations"
-    Left e -> print e
-
-
+    Left e -> errorM "rupaka.Main.Err" e

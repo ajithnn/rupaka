@@ -5,7 +5,8 @@ import           Control.Monad
 import           Data.Aeson            (encodeFile)
 import           Data.ByteString       as B hiding (readFile)
 import           Data.ByteString.Char8 as BC hiding (readFile)
-import           Data.List             as L (foldl, replicate, zip)
+import           Data.List             as L (elem, foldl, replicate, zip)
+import           Data.List.Split
 import           Data.Map              as M
 import           Data.Maybe
 import           Language.Haskell.TH
@@ -17,7 +18,7 @@ import           Types
 import           Util
 
 validate :: Either String [Validation] -> Either String [Config] -> Either String Bool
-validate (Left er) (Left e) = Left (mconcat [er," : ",e])
+validate (Left er) (Left e) = Left (mconcat [er," \n",e])
 validate (Left e) _ = Left e
 validate _ (Left e) = Left e
 validate (Right validations) (Right configs) = validated
@@ -25,22 +26,21 @@ validate (Right validations) (Right configs) = validated
         validated = Prelude.foldl (\acc v -> combineValidations (validator' v cmap) acc) (Right True) validations
 
 combineValidations :: Either String Bool -> Either String Bool -> Either String Bool
-combineValidations (Left er) (Left e)  = Left (mconcat [er, " : ",e])
+combineValidations (Left er) (Left e)  = Left (mconcat [er, " \n",e])
 combineValidations _ (Left error)      = Left error
 combineValidations (Left error) _      = Left error
 combineValidations (Right v) (Right b) = Right (v && b)
 
 validator' :: Validation -> Map Key ValueS -> Either String Bool
-validator' (ValidationS k c v) cfgM = resp
-  where res = case c of
-                MATCHES -> (cfgM ! k) TRT.=~ v :: Bool
-                _       -> False
+validator' vld cfgM = resp
+  where res = case vld of
+                (ValidationS k MATCHES v) -> (cfgM ! k) TRT.=~ v :: Bool
+                (ValidationS k ONEOF v)   -> (cfgM ! k) `L.elem` splitOn "|" v
+                (ValidationB k IS v)      -> readBool (cfgM ! k) == v
+                (ValidationI k c v)       -> getOperator c (readNum (cfgM ! k)) v
+                _ -> False
         resp  | res = Right True
-              | otherwise = Left $ mconcat ["Validation failed for: ", k ," ",show c," ", v]
-validator' (ValidationI k c v) cfgM = resp
-  where res = getOperator c (readNum (cfgM ! k)) v
-        resp  | res = Right True
-              | otherwise = Left $ mconcat ["Validation failed for: ", k , " ",show c, " ",show v]
+              | otherwise = Left $ mconcat ["Failed - ", show vld]
 
 getOperator :: Condition -> (Int -> Int -> Bool)
 getOperator CGT = (>)

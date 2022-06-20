@@ -35,6 +35,9 @@ library:
     - optparse-applicative
     - regex-tdfa
     - regex-base
+    - split
+    - hslogger
+    - directory
 
 executables:
   rupaka-exe:
@@ -56,6 +59,9 @@ executables:
     - optparse-applicative
     - regex-tdfa
     - regex-base
+    - split
+    - hslogger
+    - directory
 
 tests:
   rupaka-test:

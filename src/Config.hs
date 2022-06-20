@@ -3,7 +3,7 @@
 module Config where
 import           Data.FileEmbed
 import           Data.List                     as L
-import           Data.Map                      as M
+import           Data.Map                      as M hiding (keys)
 import           Data.Maybe
 import           Data.String                   (fromString)
 import           Data.Text                     as T
@@ -15,37 +15,29 @@ import           Text.Read                     as TR
 import           Types
 import           Util
 
+eol =  P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
+keys  = many space >> many word
+word = oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.'])
+nums = oneOf ['0'..'9']
+bools = P.try (string "True") <|> P.try (string "true") <|> P.try (string "False") <|> P.try (string "false") <?> "boolean value, True or False"
+
 configParser :: Parsec String () [Config]
 configParser = manyTill cfgs eof
-  where strTerm  = P.try defineTypeStr >> TermS <$> P.try keys <*> P.try (many space >> P.char ':' *> P.try values <* eol)
-        intTerm = P.try defineTypeInt >> TermI <$> P.try keys <*> P.try (many space >> P.char ':' *> (many space >> readNum <$> P.try (many nums) <* eol ))
-        defineTypeStr = many space >> string "ds"
-        defineTypeInt = many space >> string "di"
-        values  = many space >> many wordSpaces
-        keys  = many space >> many word
-        eol =  P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
-        cfgs = Config <$> (strTerm <|> intTerm)
-        word = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.'])
-        wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' '])
-        nums = oneOf ['0'..'9']
+  where strTerm  = P.try (many space >> string "ds") >> TermS <$> P.try keys <*> P.try (many space >> P.char ':' >> many space *> P.try (many wordSpaces) <* eol)
+        intTerm = P.try (many space >> string "di" ) >> TermI <$> P.try keys <*> P.try (many space >> P.char ':' *> (many space >> readNum <$> P.try (many nums) <* eol ))
+        boolTerm = P.try (many space >> string "db" ) >> TermB <$> P.try keys <*> P.try (many space >> P.char ':' *> (many space >> readBool <$> P.try bools <* eol ))
+        cfgs = Config <$> (strTerm <|> intTerm <|> boolTerm)
+        wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':'])
 
 validationParser :: Parsec String () [Validation]
 validationParser = manyTill validations eof
-  where validationInt = P.try validationTypeI >> ValidationI <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try values <* eol)
-        validationStr = P.try validationTypeS >> ValidationS <$> P.try keys <*> P.try strCond <*> (many space >> P.try strValues <* eol)
-        validations = P.try validationInt <|> P.try validationStr
-        validationTypeI = many space >> string "vi"
-        validationTypeS = many space >> string "vs"
-        eol =  P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
-        keys  = many space >> many word
-        values  = many nums
-        strValues = many word
-        nums = oneOf ['0'..'9']
-        word = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$'])
-        conds = oneOf ['>','<','=']
-        strConds = many space >> string "matches"
-        cond = fromString <$> (many space >> many conds)
-        strCond = fromString <$> strConds
+  where validationInt = P.try (many space >> string "vi") >> ValidationI <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try (many nums) <* eol)
+        validationStr = P.try (many space >> string "vs") >> ValidationS <$> P.try keys <*> P.try strCond <*> (many space >> P.try strValues <* eol)
+        validationBool = P.try (many space >> string "vb") >> ValidationB <$> P.try keys <*> (fromString <$> P.try (many space >> string "is")) <*> (many space >> readBool <$> P.try bools <* eol)
+        validations = P.try validationInt <|> P.try validationStr <|> P.try validationBool
+        strValues = many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$',':','/','\\','(',')','|']))
+        cond = fromString <$> (many space >> many (oneOf ['>','<','=']))
+        strCond = fromString <$> (many space >> (string "matches" <|> string "oneof"))
 
 compileConfig :: FilePath -> IO (Either String [Config])
 compileConfig fp = do
@@ -60,6 +52,3 @@ compileValid fp = do
   case P.parse validationParser "" s of
     Left  err         -> return $ Left (show err)
     Right validations -> return $ Right validations
-
-
-

@@ -1,0 +1,4 @@
+vi age < 40
+vs url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+vs mode oneof temporary|permanent|none
+vb run is True
