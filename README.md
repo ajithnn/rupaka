@@ -24,7 +24,8 @@ num threads < 15
 num users > 1
 
 ```
-More examples in ``./examples ``` `folder
+
+More examples in ```./examples``` folder
 
 ## Run 
 
