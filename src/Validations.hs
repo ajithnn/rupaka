@@ -22,8 +22,7 @@ validate (Left er) (Left e) = Left (mconcat [er," \n",e])
 validate (Left e) _ = Left e
 validate _ (Left e) = Left e
 validate (Right validations) (Right configs) = validated
-  where cmap = M.fromList $ Prelude.map extractTerms configs
-        validated = Prelude.foldl (\acc v -> combineValidations (validator' v cmap) acc) (Right True) validations
+  where validated = Prelude.foldl (\acc v -> combineValidations (validator v configs) acc) (Right True) validations
 
 combineValidations :: Either String Bool -> Either String Bool -> Either String Bool
 combineValidations (Left er) (Left e)  = Left (mconcat [er, " \n",e])
@@ -31,18 +30,27 @@ combineValidations _ (Left error)      = Left error
 combineValidations (Left error) _      = Left error
 combineValidations (Right v) (Right b) = Right (v && b)
 
-validator' :: Validation -> Map Key ValueS -> Either String Bool
-validator' vld cfgM = resp
+validator :: Validation -> [Config] -> Either String Bool
+validator vld cfgM = resp
   where res = case vld of
-                (ValidationS k MATCHES v) -> (cfgM ! k) TRT.=~ v :: Bool
-                (ValidationS k ONEOF v)   -> (cfgM ! k) `L.elem` splitOn "|" v
-                (ValidationB k IS v)      -> readBool (cfgM ! k) == v
-                (ValidationI k c v)       -> getOperator c (readNum (cfgM ! k)) v
+                (ValidationS k MATCHES v) -> extractString (getPair cfgM k) TRT.=~ v :: Bool
+                (ValidationS k ONEOF v)   -> extractString (getPair cfgM k) `L.elem` splitOn "|" v
+                (ValidationB k IS v)      -> extractBool (getPair cfgM k) == v
+                (ValidationI k c v)       -> getOperator c (extractNum (getPair cfgM k)) v
                 _ -> False
         resp  | res = Right True
               | otherwise = Left $ mconcat ["Failed - ", show vld]
 
-getOperator :: Condition -> (Int -> Int -> Bool)
+getPair :: [Config] -> Key -> Config
+getPair cfgs ky = pairs
+  where pairs = Prelude.head $ Prelude.filter (\(Config pair) -> case pair of
+                                          TermS k v  -> ky == k
+                                          TermSA k v -> ky == k
+                                          TermI k v  -> ky == k
+                                          TermB k v  -> ky == k
+                                          ) cfgs
+
+getOperator :: Condition -> (Double -> Double -> Bool)
 getOperator CGT = (>)
 getOperator CLT = (<)
 getOperator CLE = (<=)

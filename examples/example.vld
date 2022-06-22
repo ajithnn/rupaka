@@ -1,3 +1,3 @@
-vi threads < 15
-vi users < 1
-vs usertoken matches ^[a-z]+$
+num threads < 15
+num users < 1
+str usertoken matches ^[a-z]+$
