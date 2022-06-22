@@ -3,26 +3,25 @@
 ## Format Description 
 
 Config Format has the following 
-  - d represents a define row which defines a Key -> Value pair 
-  - di | ds represents additional type information on the define row , di - Integer Value , ds - String value
-  - Similarly v represents a validation row and vi / vs  represets the type of the value 
-  - A definition row has the format <d(i|s)> [Key] : [Value with Spaces] 
-  - A validation row has the format <v(i|s)> [Key]  [Conditional (<|<=|>=|>|==)] [Limit value]
+  - A file can either have validations or configurations, these need to be separately passed to the compiler.
+  - num | str | bool represents additional type information on the row , num - Double Value , str - String value, bool - Boolean value
+  - A definition file has the format <(num|str|bool|[num]|[bool]|[str])> [Key] : [Value with Spaces] 
+  - A validation file has the format <(num|str|bool|[num]|[str]|[bool])> [Key]  [Conditional] (<|<=|>=|>|==|matches|oneof)] [Limit value]
 
 
 ## Example Config 
 
 ```
-di threads : 10
-di users : 3
-ds usertoken : asdfghjkl
+num threads : 10
+num users : 3
+str usertoken : asdfghjkl
 ```
 
 ## Example Validation 
 
 ```
-vi threads < 15
-vi users > 1
+num threads < 15
+num users > 1
 
 ```
 ## Run 
