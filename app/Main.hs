@@ -54,6 +54,6 @@ handleInput (InputOptions cfgPath vldPath outPath) = do
   configs <- compileConfig cfgPath
   case validate validations configs of
     Right _ -> do
-      encodeFile outPath (Configs (fromRight [] configs))
+      encodeFile outPath (fromRight (ConfigPairs []) configs)
       print "Generated Json Configurations"
     Left e -> errorM "rupaka.Main.Err" e

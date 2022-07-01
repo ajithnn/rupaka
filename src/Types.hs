@@ -13,32 +13,23 @@ import           Language.Haskell.TH.Lib
 import           Language.Haskell.TH.Syntax
 
 type Key = String
-type ValueS = String
-type ValueSA = [String]
-type ValueNA = [Double]
-type ValueBA = [Bool]
-type ValueN = Double
-type ValueB = Bool
 
+newtype ConfigPairs = ConfigPairs [Pair] deriving (Show,Generic)
+data Pair = Str  Key String       |
+            Strs Key [String]     |
+            Numeric  Key Double   |
+            Numerics Key [Double] |
+            Booleans Key [Bool]   |
+            Boolean  Key Bool     |
+            CObject  Key ConfigPairs deriving (Generic)
 
-newtype Config = Config Pair deriving (Show,Generic)
-newtype Configs = Configs [Config] deriving (Show,Generic)
-
-data Values = ValueS | ValueN | ValueB | ValueSA
-
-data Pair = TermS  Key ValueS  |
-            TermSA Key ValueSA |
-            TermI  Key ValueN  |
-            TermIA Key ValueNA |
-            TermBA Key ValueBA |
-            TermB  Key ValueB deriving (Show,Generic)
-
-data Validation = ValidationS  Key Condition ValueS  |
-                  ValidationI  Key Condition ValueN  |
-                  ValidationB  Key Condition ValueB  |
-                  ValidationSA Key Condition ValueS  |
-                  ValidationIA Key Condition ValueN  |
-                  ValidationBA Key Condition ValueBA deriving (Generic)
+newtype VldTriples = VldTriples [Triple] deriving (Show,Generic)
+data Triple = VStr Key Condition String      |
+              VStrs Key Condition String     |
+              VNumeric Key Condition Double  |
+              VNumerics Key Condition Double |
+              VBoolean Key Condition Bool    |
+              VBooleans Key Condition [Bool] deriving (Generic)
 
 data Condition =  CGT |
                   CLT |
@@ -56,13 +47,22 @@ data InputOptions = InputOptions{
   outputPath     :: FilePath
 }
 
-instance Show Validation where
-  show (ValidationI k c v)  = mconcat [show k, " ", show c, " ", show v]
-  show (ValidationS k c v)  = mconcat [k, " ", show c, " ",v]
-  show (ValidationB k c v)  = mconcat [k, " ", show c, " ",show v]
-  show (ValidationBA k c v) = mconcat [k, " ", show c, " ",show v]
-  show (ValidationSA k c v) = mconcat [k, " ", show c, " ",show v]
-  show (ValidationIA k c v) = mconcat [k, " ", show c, " ",show v]
+instance Show Pair where
+  show (Numeric k v)  = mconcat [show k, " ", show v]
+  show (Numerics k v) = mconcat [show k, " ", show v]
+  show (Str k v)      = mconcat [show k, " ", show v]
+  show (Strs k v)     = mconcat [show k, " ", show v]
+  show (Boolean k v)  = mconcat [show k, " ", show v]
+  show (Booleans k v) = mconcat [show k, " ", show v]
+  show (CObject k v)  = mconcat [show k, " ", show v]
+
+instance Show Triple where
+  show (VNumeric k c v)  = mconcat [show k, " ", show c, " ", show v]
+  show (VNumerics k c v) = mconcat [show k, " ", show c, " ", show v]
+  show (VStr k c v)      = mconcat [show k, " ", show c, " ", show v]
+  show (VStrs k c v)     = mconcat [show k, " ", show c, " ", show v]
+  show (VBoolean k c v)  = mconcat [show k, " ", show c, " ", show v]
+  show (VBooleans k c v) = mconcat [show k, " ", show c, " ", show v]
 
 instance IsString Condition where
   fromString c = case c of
@@ -87,18 +87,16 @@ instance Show Condition where
   show ONEOF   = "oneof"
   show None    = ""
 
-instance ToJSON Configs where
-  toJSON (Configs cfgs) = object $ final cfgs
+instance ToJSON Condition where
+
+instance ToJSON ConfigPairs where
+  toJSON (ConfigPairs cfgs) = object $ final cfgs
     where final (c:cs) = val c : final cs
           final _      = []
-          val (Config (TermS k v))  = fromString k .= v
-          val (Config (TermSA k v)) = fromString k .= v
-          val (Config (TermB k v))  = fromString k .= v
-          val (Config (TermI k v))  = fromString k .= v
-          val (Config (TermBA k v)) = fromString k .= v
-          val (Config (TermIA k v)) = fromString k .= v
-
-
-instance ToJSON Config where
-instance ToJSON Pair where
-instance ToJSON Condition where
+          val (Str k v)      = fromString k .= v
+          val (Strs k v)     = fromString k .= v
+          val (Boolean k v)  = fromString k .= v
+          val (Numeric k v)  = fromString k .= v
+          val (Booleans k v) = fromString k .= v
+          val (Numerics k v) = fromString k .= v
+          val (CObject k v)  = fromString k .= v

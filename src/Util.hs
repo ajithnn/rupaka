@@ -12,26 +12,23 @@ import           System.IO.Error    hiding (catch)
 import           Text.Read          as TR (readMaybe)
 import           Types
 
-extractBool :: Config -> Bool
-extractBool (Config (TermB k v)) = v
-extractBool _                    = False
+extractBool (Boolean k v) = v
+extractBool _             = False
 
-extractNum :: Config -> Double
-extractNum (Config (TermI k v)) = v
-extractNum _                    = 0
+extractNum (Numeric k v) = v
+extractNum _             = 0
 
-extractString :: Config -> String
-extractString (Config (TermS k v)) = v
-extractString _                    = ""
+extractString (Str k v) = v
+extractString _         = ""
 
-extractStrings (Config (TermSA k v)) = v
-extractStrings _                     = []
+extractStrings (Strs k v) = v
+extractStrings _          = []
 
-extractNums (Config (TermIA k v)) = v
-extractNums _                     = []
+extractNums (Numerics k v) = v
+extractNums _              = []
 
-extractBools (Config (TermBA k v)) = v
-extractBools _                     = []
+extractBools (Booleans k v) = v
+extractBools _              = []
 
 readNum :: String -> Double
 readNum v = fromMaybe 0 $ TR.readMaybe v
