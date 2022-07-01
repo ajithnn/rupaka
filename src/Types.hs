@@ -22,8 +22,7 @@ type ValueB = Bool
 
 
 newtype Config = Config Pair deriving (Show,Generic)
-
-newtype Output = Output [Config] deriving (Show,Generic)
+newtype Configs = Configs [Config] deriving (Show,Generic)
 
 data Values = ValueS | ValueN | ValueB | ValueSA
 
@@ -34,9 +33,12 @@ data Pair = TermS  Key ValueS  |
             TermBA Key ValueBA |
             TermB  Key ValueB deriving (Show,Generic)
 
-data Validation = ValidationS Key Condition ValueS    |
-                  ValidationI Key Condition ValueN    |
-                  ValidationB Key Condition ValueB deriving (Generic)
+data Validation = ValidationS  Key Condition ValueS  |
+                  ValidationI  Key Condition ValueN  |
+                  ValidationB  Key Condition ValueB  |
+                  ValidationSA Key Condition ValueS  |
+                  ValidationIA Key Condition ValueN  |
+                  ValidationBA Key Condition ValueBA deriving (Generic)
 
 data Condition =  CGT |
                   CLT |
@@ -55,9 +57,12 @@ data InputOptions = InputOptions{
 }
 
 instance Show Validation where
-  show (ValidationI k c v) = mconcat [show k, " ", show c, " ", show v]
-  show (ValidationS k c v) = mconcat [k, " ", show c, " ",v]
-  show (ValidationB k c v) = mconcat [k, " ", show c, " ",show v]
+  show (ValidationI k c v)  = mconcat [show k, " ", show c, " ", show v]
+  show (ValidationS k c v)  = mconcat [k, " ", show c, " ",v]
+  show (ValidationB k c v)  = mconcat [k, " ", show c, " ",show v]
+  show (ValidationBA k c v) = mconcat [k, " ", show c, " ",show v]
+  show (ValidationSA k c v) = mconcat [k, " ", show c, " ",show v]
+  show (ValidationIA k c v) = mconcat [k, " ", show c, " ",show v]
 
 instance IsString Condition where
   fromString c = case c of
@@ -82,8 +87,8 @@ instance Show Condition where
   show ONEOF   = "oneof"
   show None    = ""
 
-instance ToJSON Output where
-  toJSON (Output cfgs) = object $ final cfgs
+instance ToJSON Configs where
+  toJSON (Configs cfgs) = object $ final cfgs
     where final (c:cs) = val c : final cs
           final _      = []
           val (Config (TermS k v))  = fromString k .= v

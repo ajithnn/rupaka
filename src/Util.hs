@@ -24,6 +24,15 @@ extractString :: Config -> String
 extractString (Config (TermS k v)) = v
 extractString _                    = ""
 
+extractStrings (Config (TermSA k v)) = v
+extractStrings _                     = []
+
+extractNums (Config (TermIA k v)) = v
+extractNums _                     = []
+
+extractBools (Config (TermBA k v)) = v
+extractBools _                     = []
+
 readNum :: String -> Double
 readNum v = fromMaybe 0 $ TR.readMaybe v
 

@@ -1,0 +1,7 @@
+num  age < 40
+str  url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+str  mode oneof temporary|permanent|none
+bool run is True
+[str] vegetables oneof tomato|potato|ocra|onion|carrot|capsicum|radish
+[bool] run oneof True|False
+[num]  ages > 0

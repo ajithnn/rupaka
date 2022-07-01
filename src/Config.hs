@@ -37,17 +37,22 @@ configParser = manyTill cfgs eof
         boolArray =  P.try ( between (P.char '[') (P.char ']') boolCommas)
         str =  P.try (many wordSpaces)
         numCommas = oneOf (['0'..'9']++['.',','])
-        boolCommas = ( P.try (string "True") <|> P.try (string "true") <|> P.try (string "False") <|> P.try (string "false") <?> "boolean value, True or False" ) `P.sepBy` P.char ','
+        boolCommas = bools `P.sepBy` P.char ','
 
 validationParser :: Parsec String () [Validation]
 validationParser = manyTill validations eof
   where validationInt = P.try (many space >> string "num") >> ValidationI <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try (many nums) <* eol)
         validationStr = P.try (many space >> string "str") >> ValidationS <$> P.try keys <*> P.try strCond <*> (many space >> P.try strValues <* eol)
         validationBool = P.try (many space >> string "bool") >> ValidationB <$> P.try keys <*> (fromString <$> P.try (many space >> string "is")) <*> (many space >> readBool <$> P.try bools <* eol)
-        validations = P.try validationInt <|> P.try validationStr <|> P.try validationBool
+        validationsInt = P.try (many space >> string "[num]") >> ValidationIA <$> P.try keys <*> P.try cond <*> (many space >> readNum <$>P.try (many nums) <* eol)
+        validationsStr = P.try (many space >> string "[str]") >> ValidationSA <$> P.try keys <*> P.try strCond <*> (many space >> P.try strValues <* eol)
+        validationsBool = P.try (many space >> string "[bool]") >> ValidationBA <$> P.try keys <*> P.try boolCond <*> (many space >> readBools <$> P.try boolsArr <* eol)
+        validations = P.try validationsInt <|> P.try validationsStr <|> P.try validationsBool <|> P.try validationInt <|> P.try validationStr <|> P.try validationBool
         strValues = many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$',':','/','\\','(',')','|']))
         cond = fromString <$> (many space >> many (oneOf ['>','<','=']))
         strCond = fromString <$> (many space >> (string "matches" <|> string "oneof"))
+        boolCond = fromString <$> (many space >> (string "is" <|> string "oneof"))
+        boolsArr = bools `P.sepBy` P.char '|'
 
 compileConfig :: FilePath -> IO (Either String [Config])
 compileConfig fp = do
