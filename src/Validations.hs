@@ -1,8 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
-
 module Validations where
 
-import           Config
 import           Control.Monad
 import           Data.Aeson            (encodeFile)
 import           Data.ByteString       as B hiding (readFile)
@@ -11,8 +8,9 @@ import           Data.List             as L (all, elem, foldl, map, replicate,
                                              zip)
 import           Data.List.Split
 import           Data.Map              as M
-import           Data.Maybe
+import           Data.Maybe            as Mb
 import           Language.Haskell.TH
+import           Parser
 import           System.Environment
 import           Text.Read             as T (readMaybe)
 import qualified Text.Regex.Base       as TRB
@@ -49,16 +47,23 @@ validator vld cfgM = resp
         resp  | res = Right True
               | otherwise = Left $ mconcat ["Failed - ", show vld]
 
-getPair :: [Pair] -> Key -> Pair
-getPair cfgs ky = pairs
-  where pairs = Prelude.head $ Prelude.filter (\case
-                                          Str k v  -> ky == k
-                                          Numeric k v  -> ky == k
-                                          Boolean k v  -> ky == k
-                                          Strs k v -> ky == k
-                                          Booleans k v -> ky == k
-                                          Numerics k v -> ky == k
-                                          ) cfgs
+getPair :: [Pair] -> Key -> Maybe Pair
+getPair cfgs ky = firstOf filteredPairs
+  where firstOf []     = Nothing
+        firstOf (x:xs) = Just x
+        pairs [] p        = p
+        pairs (k:ks) cfs = pairs ks (fromMaybe [] $ firstOf $ Mb.mapMaybe (filterPairs k) cfs)
+        splitKeys = splitOn ">" ky
+        filteredPairs = pairs splitKeys cfgs
+
+filterPairs :: Key -> Pair -> Maybe [Pair]
+filterPairs ky (Str k v)      = if ky == k then Just [Str k v] else Nothing
+filterPairs ky (Numeric k v)  = if ky == k then Just [Numeric k v] else Nothing
+filterPairs ky (Boolean k v)  = if ky == k then Just [Boolean k v] else Nothing
+filterPairs ky (Strs k v)     = if ky == k then Just [Strs k v] else Nothing
+filterPairs ky (Booleans k v) = if ky == k then Just [Booleans k v] else Nothing
+filterPairs ky (Numerics k v) = if ky == k then Just [Numerics k v] else Nothing
+filterPairs ky (CObject  k (ConfigPairs prs)) = if ky == k then Just prs else Nothing
 
 getOperator :: Condition -> (Double -> Double -> Bool)
 getOperator CGT = (>)

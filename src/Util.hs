@@ -12,23 +12,23 @@ import           System.IO.Error    hiding (catch)
 import           Text.Read          as TR (readMaybe)
 import           Types
 
-extractBool (Boolean k v) = v
-extractBool _             = False
+extractBool (Just (Boolean k v)) = v
+extractBool _                    = False
 
-extractNum (Numeric k v) = v
-extractNum _             = 0
+extractNum (Just (Numeric k v)) = v
+extractNum _                    = 0
 
-extractString (Str k v) = v
-extractString _         = ""
+extractString (Just (Str k v)) = v
+extractString _                = ""
 
-extractStrings (Strs k v) = v
-extractStrings _          = []
+extractStrings (Just (Strs k v)) = v
+extractStrings _                 = []
 
-extractNums (Numerics k v) = v
-extractNums _              = []
+extractNums (Just (Numerics k v)) = v
+extractNums _                     = []
 
-extractBools (Booleans k v) = v
-extractBools _              = []
+extractBools (Just (Booleans k v)) = v
+extractBools _                     = []
 
 readNum :: String -> Double
 readNum v = fromMaybe 0 $ TR.readMaybe v

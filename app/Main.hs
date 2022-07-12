@@ -2,7 +2,6 @@
 
 module Main where
 
-import           Config
 import           Data.Aeson                 (encodeFile)
 import           Data.ByteString            as B hiding (readFile)
 import           Data.ByteString.Char8      as BC hiding (readFile)
@@ -12,6 +11,7 @@ import           Data.Maybe
 import           Data.Semigroup             ((<>))
 import           Language.Haskell.TH.Syntax
 import           Options.Applicative
+import           Parser
 import           System.Log.Handler         (setFormatter)
 import           System.Log.Handler.Simple
 import           System.Log.Logger
