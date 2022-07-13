@@ -4,8 +4,8 @@ import           Control.Monad
 import           Data.Aeson            (encodeFile)
 import           Data.ByteString       as B hiding (readFile)
 import           Data.ByteString.Char8 as BC hiding (readFile)
-import           Data.List             as L (all, elem, foldl, map, replicate,
-                                             zip)
+import           Data.List             as L (all, concat, elem, foldl, map,
+                                             replicate, zip)
 import           Data.List.Split
 import           Data.Map              as M
 import           Data.Maybe            as Mb
@@ -34,25 +34,25 @@ combineValidations (Right v) (Right b) = Right (v && b)
 validator :: Triple -> [Pair] -> Either String Bool
 validator vld cfgM = resp
   where res = case vld of
-                (VStr  k MATCHES v)   -> extractString (getPair cfgM k) TRT.=~ v :: Bool
-                (VBoolean k IS v)     -> extractBool (getPair cfgM k) == v
-                (VNumeric k c v)      -> getOperator c (extractNum (getPair cfgM k)) v
-                (VStr  k ONEOF v)     -> extractString (getPair cfgM k) `L.elem` splitOn "|" v
-                (VStrs k ONEOF v)     -> L.all (\vl -> vl `L.elem` splitStr v) (extractStrings (getPair cfgM k))
-                (VNumerics k c v)     -> L.all (\vl -> getOperator c vl v) (extractNums (getPair cfgM k))
-                (VBooleans k ONEOF v) -> L.all (`L.elem` v) (extractBools (getPair cfgM k))
-                (VStrs k MATCHES v)   -> L.all (\vl -> vl TRT.=~ v :: Bool) (extractStrings (getPair cfgM k))
+                (VStr  k MATCHES v)   -> L.all (\vl -> extractString vl TRT.=~ v :: Bool) (getPairs cfgM k)
+                (VBoolean k IS v)     -> L.all (\vl -> extractBool vl == v) (getPairs cfgM k)
+                (VNumeric k c v)      -> L.all (\vl -> getOperator c (extractNum vl) v) (getPairs cfgM k)
+                (VStr  k ONEOF v)     -> L.all (\vl -> extractString vl `L.elem` splitOn "|" v) (getPairs cfgM k)
+                (VStrs k ONEOF v)     -> L.all (\vl -> vl `L.elem` splitStr v) (L.foldl (flip (++)) [] (L.map extractStrings (getPairs cfgM k)))
+                (VNumerics k c v)     -> L.all (\vl -> getOperator c vl v) (L.foldl (flip (++)) [] (L.map extractNums (getPairs cfgM k)))
+                (VBooleans k ONEOF v) -> L.all (`L.elem` v) (L.foldl (flip (++)) [] (L.map extractBools (getPairs cfgM k)))
+                (VStrs k MATCHES v)   -> L.all (\vl -> vl TRT.=~ v :: Bool) (L.foldl (flip (++)) [] (L.map extractStrings (getPairs cfgM k)))
                 _ -> False
         splitStr = splitOn "|"
         resp  | res = Right True
               | otherwise = Left $ mconcat ["Failed - ", show vld]
 
-getPair :: [Pair] -> Key -> Maybe Pair
-getPair cfgs ky = firstOf filteredPairs
+getPairs :: [Pair] -> Key -> [Pair]
+getPairs cfgs ky = filteredPairs
   where firstOf []     = Nothing
         firstOf (x:xs) = Just x
         pairs [] p        = p
-        pairs (k:ks) cfs = pairs ks (fromMaybe [] $ firstOf $ Mb.mapMaybe (filterPairs k) cfs)
+        pairs (k:ks) cfs = pairs ks (L.foldl (flip (++)) [] $ Mb.mapMaybe (filterPairs k) cfs)
         splitKeys = splitOn ">" ky
         filteredPairs = pairs splitKeys cfgs
 
@@ -64,6 +64,11 @@ filterPairs ky (Strs k v)     = if ky == k then Just [Strs k v] else Nothing
 filterPairs ky (Booleans k v) = if ky == k then Just [Booleans k v] else Nothing
 filterPairs ky (Numerics k v) = if ky == k then Just [Numerics k v] else Nothing
 filterPairs ky (CObject  k (ConfigPairs prs)) = if ky == k then Just prs else Nothing
+filterPairs ky (CObjects  k (v:vs)) = if ky == k then (++) <$> getPair v <*> filterPairs ky (CObjects k vs) else Nothing
+filterPairs ky (CObjects  k []) = if ky == k then Just [] else Nothing
+
+getPair :: ConfigPairs -> Maybe [Pair]
+getPair (ConfigPairs v) = Just v
 
 getOperator :: Condition -> (Double -> Double -> Bool)
 getOperator CGT = (>)

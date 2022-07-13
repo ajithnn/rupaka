@@ -15,12 +15,13 @@ import           Language.Haskell.TH.Syntax
 type Key = String
 
 newtype ConfigPairs = ConfigPairs [Pair] deriving (Show,Generic)
-data Pair = Str  Key String       |
-            Strs Key [String]     |
-            Numeric  Key Double   |
-            Numerics Key [Double] |
-            Booleans Key [Bool]   |
-            Boolean  Key Bool     |
+data Pair = Str  Key String             |
+            Strs Key [String]           |
+            Numeric  Key Double         |
+            Numerics Key [Double]       |
+            Booleans Key [Bool]         |
+            Boolean  Key Bool           |
+            CObjects Key [ConfigPairs]  |
             CObject  Key ConfigPairs deriving (Generic)
 
 newtype VldTriples = VldTriples [Triple] deriving (Show,Generic)
@@ -55,6 +56,7 @@ instance Show Pair where
   show (Boolean k v)  = mconcat [show k, " ", show v]
   show (Booleans k v) = mconcat [show k, " ", show v]
   show (CObject k v)  = mconcat [show k, " ", show v]
+  show (CObjects k v) = mconcat [show k, " ", show v]
 
 instance Show Triple where
   show (VNumeric k c v)  = mconcat [show k, " ", show c, " ", show v]
@@ -100,3 +102,4 @@ instance ToJSON ConfigPairs where
           val (Booleans k v) = fromString k .= v
           val (Numerics k v) = fromString k .= v
           val (CObject k v)  = fromString k .= v
+          val (CObjects k v) = fromString k .= v

@@ -1,3 +1,3 @@
 str kid matches ^[a-z]+$
-str male>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+str male>offices>company matches ^[a-z]+$
 str female>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
