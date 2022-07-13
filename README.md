@@ -121,7 +121,7 @@ str female>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
 
 More examples in ```./examples``` folder
 
-## Run Commands
+## Run Commands on Linux
 
 ```
 ./rupaka -o "examples/outputs-5.json" -c "examples/example-5.cfg" -v "examples/example-5.vld"
@@ -130,6 +130,16 @@ More examples in ```./examples``` folder
 ```
 ./rupaka -o "examples/outputs-4.json" -c "examples/example-4.cfg" -v "examples/example-4.vld"
 ``` 
+
+## Run Commands with docker (for macos)
+
+```
+docker pull slashring/rupaka:v0.0.5
+```
+
+```
+docker run --rm -i --mount type=bind,src="$(pwd)"/examples,dst=/app/rupaka/examples -t slashring/rupaka:v0.0.5 -o /app/rupaka/examples/ouput-d.json -c /app/rupaka/examples/example-1.cfg -v /app/rupaka/examples/example-1.vld
+```
 
 
 ## Roadmap 
