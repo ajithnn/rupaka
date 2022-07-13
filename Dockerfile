@@ -11,15 +11,17 @@ RUN cd /app/run/rupaka && git checkout ${SRC_TAG}
 
 RUN cd /app/run/rupaka && stack setup
 RUN cd /app/run/rupaka && stack build --ghc-options -O
+RUN cd /app/run/rupaka && stack --no-terminal install
 
 FROM alpine:3.14 
 
 WORKDIR /app 
 
 RUN mkdir /app/rupaka
-COPY --from=intermediate /app/run/rupaka/.stack-work/dist/x86_64-linux/Cabal-3.4.1.0/build/rupaka-exe/rupaka-exe /app/rupaka/rupaka
-COPY --from=intermediate /app/run/rupaka/init.sh /app/rupaka/init.sh
 
 RUN apk update && apk upgrade && apk add bash
+
+COPY --from=intermediate /root/.local/bin/rupaka-exe /app/rupaka/rupaka
+COPY --from=intermediate /app/run/rupaka/init.sh /app/rupaka/init.sh
 
 ENTRYPOINT ["/bin/bash","/app/rupaka/init.sh"]

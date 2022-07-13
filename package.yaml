@@ -40,7 +40,7 @@ library:
     - template-haskell
 
 executables:
-  rupaka-exe:
+  rupaka:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
