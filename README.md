@@ -130,3 +130,11 @@ More examples in ```./examples``` folder
 ```
 ./rupaka -o "examples/outputs-4.json" -c "examples/example-4.cfg" -v "examples/example-4.vld"
 ``` 
+
+
+## Roadmap 
+
+1. Add more validations at individual fields level
+2. Add validations for array and array of objects like length of array etc
+3. Add Object validations like allowed keys / required keys 
+4. Add required keys validation at top level
