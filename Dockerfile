@@ -1,25 +1,25 @@
-FROM fpco/stack-build-small:lts-19
+FROM fpco/stack-build-small:lts-19 as intermediate
 
 WORKDIR /app
 
-ARG SSH_PRIVATE_KEY
 ARG SRC_TAG
 
-RUN mkdir /root/.ssh/
-RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
-RUN chmod 600 /root/.ssh/id_rsa 
-RUN chmod 700 /root/.ssh 
-RUN touch /root/.ssh/known_hosts 
-RUN chmod 644 /root/.ssh/known_hosts 
-RUN  apt-get -yq update && apt-get -yqq install ssh
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts 
-
 RUN mkdir /app/run 
-RUN git clone git@github.com:ajithnn/rupaka.git /app/run/rupaka
+RUN git clone https://github.com/ajithnn/rupaka.git /app/run/rupaka
 RUN cd /app/run/rupaka && git fetch && git fetch --tags
 RUN cd /app/run/rupaka && git checkout ${SRC_TAG}
 
 RUN cd /app/run/rupaka && stack setup
-RUN cd /app/run/rupaka && CONFIG_FILEPATH="./new_sample.cfg" stack build --force-dirty --ghc-options -O --ghc-options -fforce-recomp && stack exec rupaka-exe -- "output.json"
+RUN cd /app/run/rupaka && stack build --ghc-options -O
 
-ENTRYPOINT ["/bin/bash","/app/run/rupaka/init.sh"]
+FROM alpine:3.14 
+
+WORKDIR /app 
+
+RUN mkdir /app/rupaka
+COPY --from=intermediate /app/run/rupaka/.stack-work/dist/x86_64-linux/Cabal-3.4.1.0/build/rupaka-exe/rupaka-exe /app/rupaka/rupaka
+COPY --from=intermediate /app/run/rupaka/init.sh /app/rupaka/init.sh
+
+RUN apk update && apk upgrade && apk add bash
+
+ENTRYPOINT ["/bin/bash","/app/rupaka/init.sh"]
