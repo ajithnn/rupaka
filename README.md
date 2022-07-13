@@ -1,4 +1,4 @@
-# Rupaka (WIP)
+# Rupaka
 
 ## Format Description 
 
