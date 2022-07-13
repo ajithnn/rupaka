@@ -13,15 +13,15 @@ RUN cd /app/run/rupaka && stack setup
 RUN cd /app/run/rupaka && stack build --ghc-options -O
 RUN cd /app/run/rupaka && stack --no-terminal install
 
-FROM alpine:3.14 
+FROM ubuntu:latest
 
 WORKDIR /app 
 
 RUN mkdir /app/rupaka
 
-RUN apk update && apk upgrade && apk add bash
-
 COPY --from=intermediate /root/.local/bin/rupaka /app/rupaka/
 COPY --from=intermediate /app/run/rupaka/init.sh /app/rupaka/init.sh
+
+RUN chmod a+x /app/rupaka/init.sh
 
 ENTRYPOINT ["/bin/bash","/app/rupaka/init.sh"]
