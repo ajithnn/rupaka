@@ -21,7 +21,7 @@ RUN mkdir /app/rupaka
 
 RUN apk update && apk upgrade && apk add bash
 
-COPY --from=intermediate /root/.local/bin/rupaka-exe /app/rupaka/rupaka
+COPY --from=intermediate /root/.local/bin/rupaka /app/rupaka/
 COPY --from=intermediate /app/run/rupaka/init.sh /app/rupaka/init.sh
 
 ENTRYPOINT ["/bin/bash","/app/rupaka/init.sh"]
