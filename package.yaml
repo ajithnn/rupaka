@@ -29,14 +29,13 @@ library:
     - parsec
     - containers
     - bytestring
-    - aeson >=1.3 && <1.6
+    - aeson
     - optparse-applicative
     - regex-tdfa
     - regex-base
     - split
     - hslogger
     - directory
-    - aeson-gadt-th >= 0.2.5.1
     - template-haskell
 
 executables:
@@ -53,14 +52,13 @@ executables:
     - parsec
     - containers
     - bytestring
-    - aeson >=1.3 && <1.6
+    - aeson
     - optparse-applicative
     - regex-tdfa
     - regex-base
     - split
     - hslogger
     - directory
-    - aeson-gadt-th >= 0.2.5.1
     - template-haskell
 
 tests:
