@@ -1,3 +1,3 @@
 #! /bin/bash
 
-`/app/rupaka/rupaka "$@"`
+/app/rupaka/rupaka "$@"

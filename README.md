@@ -138,7 +138,7 @@ docker pull slashring/rupaka:v0.0.5
 ```
 
 ```
-docker run --rm -i --mount type=bind,src="$(pwd)"/examples,dst=/app/rupaka/examples -t slashring/rupaka:v0.0.5 -o /app/rupaka/examples/ouput-d.json -c /app/rupaka/examples/example-1.cfg -v /app/rupaka/examples/example-1.vld
+docker run --rm -i --mount type=bind,src="$(pwd)"/examples,dst=/app/rupaka/examples -t slashring/rupaka:v0.0.5 -o /app/rupaka/examples/output-d.json -c /app/rupaka/examples/example-1.cfg -v /app/rupaka/examples/example-1.vld
 ```
 
 
