@@ -131,6 +131,14 @@ More examples in ```./examples``` folder
 ./rupaka -o "examples/outputs-4.json" -c "examples/example-4.cfg" -v "examples/example-4.vld"
 ``` 
 
+
+### Output 
+
+```
+cat examples/outputs-4.json | jq -r .
+cat examples/outputs-5.json | jq -r .
+```
+
 ## Run Commands with docker (for macos)
 
 ```
@@ -139,6 +147,12 @@ docker pull slashring/rupaka:v0.0.5
 
 ```
 docker run --rm -i --mount type=bind,src="$(pwd)"/examples,dst=/app/rupaka/examples -t slashring/rupaka:v0.0.5 -o /app/rupaka/examples/output-d.json -c /app/rupaka/examples/example-1.cfg -v /app/rupaka/examples/example-1.vld
+```
+
+### Output 
+
+```
+cat examples/output-d.json | jq -r .
 ```
 
 
