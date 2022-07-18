@@ -46,8 +46,8 @@ configParser = ConfigPairs <$> manyTill cfgs eof
         strTerms  = typeTerm "[str]"  >> Strs     <$> P.try keys <*> P.try (sep >> many space  >> strArray <* eol)
         intTerms  = typeTerm "[num]"  >> Numerics <$> P.try keys <*> P.try (sep *> (many space >> intArray  <* eol ))
         boolTerms = typeTerm "[bool]" >> Booleans <$> P.try keys <*> P.try (sep *> (many space >> boolArray <* eol ))
-        objTerms = typeTerm "[obj]"  >> CObjects <$> P.try keys <*> P.try (sep *> (many space >> between (P.string "[\n") (P.string "]\n") (many objects) ))
-        objTerm  = typeTerm "obj"   >> CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
+        objTerms = typeTerm "[obj]"   >> CObjects <$> P.try keys <*> P.try (sep *> (many space >> between (P.string "[\n") (P.string "]\n") (many objects) ))
+        objTerm  = typeTerm "obj"     >> CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
         strArray  = splitOn "," <$> btwBrackets (many wordSpaces)
         intArray  = readNums . splitOn "," <$> btwBrackets (many numCommas)
         boolArray = readBools <$> btwBrackets boolCommas
@@ -59,17 +59,13 @@ configParser = ConfigPairs <$> manyTill cfgs eof
 
 validationParser :: Parsec String () VldTriples
 validationParser = VldTriples <$> manyTill validations eof
-  where validations = validationsInt <|> validationsStr <|> validationsBool <|> validationInt <|> validationStr <|> validationBool
+  where validations = validationsInt <|> validationsStr <|>  validationInt <|> validationStr
         validationInt   = typeTerm "num"    >> VNumeric   <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationStr   = typeTerm "str"    >> VStr       <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        validationBool  = typeTerm "bool"   >> VBoolean   <$> P.try keys <*> isCond   <*> (many space >> bool <* eol)
         validationsInt  = typeTerm "[num]"  >> VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationsStr  = typeTerm "[str]"  >> VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        validationsBool = typeTerm "[bool]" >> VBooleans  <$> P.try keys <*> boolCond <*> (many space >> readBools <$> P.try boolsArr <* eol)
         cond =      fromString <$> P.try (many space >> many (oneOf ['>','<','=']))
-        strCond =   fromString <$> P.try (many space >> (string "matches" <|> string "oneof"))
-        boolCond =  fromString <$> P.try (many space >> (string "is" <|> string "oneof"))
-        isCond =    fromString <$> P.try (many space >> string "is")
+        strCond =   fromString <$> P.try (many space >> strConditions)
         boolsArr = bools `P.sepBy` P.char '|'
 
 -- Parser helpers
@@ -87,3 +83,12 @@ numCommas = oneOf (['0'..'9']++['.',','])
 boolCommas = bools `P.sepBy` P.char ','
 btwBrackets vals = P.try (between (P.char '[') (P.char ']') vals)
 strValidations = many space >> P.try (many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$',':','/','\\','(',')','|'])))
+strConditions  =    P.try (string "not_matches")  <|>
+                    P.try (string "not_oneof")    <|>
+                    P.try (string "length_gt")    <|>
+                    P.try (string "length_lt")    <|>
+                    P.try (string "length_gte")   <|>
+                    P.try (string "length_lte")   <|>
+                    P.try (string "length_eq")    <|>
+                    P.try (string "matches")      <|>
+                    P.try (string "oneof")

@@ -44,9 +44,14 @@ inputOptions = InputOptions
                     <> short 'o'
                     <> metavar "OUTPUT FILE PATH"
                     <> help "Filepath for output file" )
+                <*> switch
+                    ( long "silent"
+                    <> short 's'
+                    <> help "silent flag, to not print output on stdout" )
+
 
 handleInput :: InputOptions -> IO()
-handleInput (InputOptions cfgPath vldPath outPath) = do
+handleInput (InputOptions cfgPath vldPath outPath isSilent) = do
   removeIfExists "parse.err"
   eh <- fileHandler "parse.err" INFO
   updateGlobalLogger "rupaka.Main.Err" (addHandler eh)
@@ -55,5 +60,9 @@ handleInput (InputOptions cfgPath vldPath outPath) = do
   case validate validations configs of
     Right _ -> do
       encodeFile outPath (fromRight (ConfigPairs []) configs)
-      print "Generated Json Configurations"
+      printResult isSilent outPath
     Left e -> errorM "rupaka.Main.Err" e
+
+printResult :: Bool -> FilePath ->IO ()
+printResult isSilent  outPath | not isSilent = print $ mconcat ["Generated output to - ", outPath]
+                              | otherwise = return ()

@@ -1,3 +1,5 @@
 num threads < 15
 num users < 1
 str usertoken matches ^[a-z]+$
+str usertoken length_gt 1
+str usertoken length_lt 25

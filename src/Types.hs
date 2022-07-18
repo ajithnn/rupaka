@@ -28,9 +28,7 @@ newtype VldTriples = VldTriples [Triple] deriving (Show,Generic)
 data Triple = VStr Key Condition String      |
               VStrs Key Condition String     |
               VNumeric Key Condition Double  |
-              VNumerics Key Condition Double |
-              VBoolean Key Condition Bool    |
-              VBooleans Key Condition [Bool] deriving (Generic)
+              VNumerics Key Condition Double deriving (Generic)
 
 data Condition =  CGT |
                   CLT |
@@ -38,14 +36,21 @@ data Condition =  CGT |
                   CGE |
                   CEQ |
                   MATCHES |
-                  IS |
                   ONEOF |
+                  NOT_MATCHES |
+                  NOT_ONEOF |
+                  LENGTH_GT |
+                  LENGTH_GTE |
+                  LENGTH_LT |
+                  LENGTH_LTE |
+                  LENGTH_EQ |
                   None deriving (Eq,Ord,Generic)
 
 data InputOptions = InputOptions{
   configpath     :: FilePath,
   validationPath :: FilePath,
-  outputPath     :: FilePath
+  outputPath     :: FilePath,
+  silent         :: Bool
 }
 
 instance Show Pair where
@@ -63,31 +68,41 @@ instance Show Triple where
   show (VNumerics k c v) = mconcat [show k, " ", show c, " ", show v]
   show (VStr k c v)      = mconcat [show k, " ", show c, " ", show v]
   show (VStrs k c v)     = mconcat [show k, " ", show c, " ", show v]
-  show (VBoolean k c v)  = mconcat [show k, " ", show c, " ", show v]
-  show (VBooleans k c v) = mconcat [show k, " ", show c, " ", show v]
 
 instance IsString Condition where
   fromString c = case c of
-    ">"       -> CGT
-    "<"       -> CLT
-    ">="      -> CGE
-    "<="      -> CLE
-    "=="      -> CEQ
-    "matches" -> MATCHES
-    "is"      -> IS
-    "oneof"   -> ONEOF
-    _         -> None
+    ">"           -> CGT
+    "<"           -> CLT
+    ">="          -> CGE
+    "<="          -> CLE
+    "=="          -> CEQ
+    "matches"     -> MATCHES
+    "oneof"       -> ONEOF
+    "not_matches" -> NOT_MATCHES
+    "not_oneof"   -> NOT_ONEOF
+    "length_gt"   -> LENGTH_GT
+    "length_gte"  -> LENGTH_GTE
+    "length_lt"   -> LENGTH_LT
+    "length_lte"  -> LENGTH_LTE
+    "length_eq"   -> LENGTH_EQ
+    _             -> None
 
 instance Show Condition where
-  show CGT     = ">"
-  show CLT     = "<"
-  show CGE     = ">="
-  show CLE     = "<="
-  show CEQ     = "=="
-  show MATCHES = "matches"
-  show IS      = "is"
-  show ONEOF   = "oneof"
-  show None    = ""
+  show CGT         = ">"
+  show CLT         = "<"
+  show CGE         = ">="
+  show CLE         = "<="
+  show CEQ         = "=="
+  show MATCHES     = "should match"
+  show ONEOF       = "shoube be one of"
+  show NOT_MATCHES = "should not match"
+  show NOT_ONEOF   = "should not be one of"
+  show LENGTH_GT   = "length >"
+  show LENGTH_GTE  = "length >="
+  show LENGTH_LT   = "length <"
+  show LENGTH_LTE  = "length <="
+  show LENGTH_EQ   = "length =="
+  show None        = ""
 
 instance ToJSON Condition where
 
