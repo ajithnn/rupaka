@@ -51,24 +51,26 @@ num users > 1
 
 ```
 obj male : {
-str url : https://asdf.com
-bool run : True
-str mode : none
-num age : 32.0234
-obj office : {
-str desg : Architect
-str company : amagi
+    str url : https://asdf.com
+    bool run : True
+    str mode : none
+    num age : 32.0234
+    obj office : {
+        str desg : Architect
+        str company : amagi
+    }
 }
-}
+
 obj female : {
-str url : https://efgh.com
-bool run : True
-str mode : none
-num age : 31.0234
+    str url : https://efgh.com
+    bool run : True
+    str mode : none
+    num age : 31.0234
 }
+
 str kid : qwerty
 num house : 148
-[num] dimensions : [25.0,51.0,25.0,51.0]
+[num] dimensions : [25.0, 51.0, 25.0, 51.0]
 ```
 
 ## Example Object Validation 
@@ -83,32 +85,34 @@ str female>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
 
 ```
 obj male : {
-str url : https://asdf.com
-bool run : True
-str mode : none
-num age : 32.0234
-[obj] offices : [
-{
-str location : blr
-str desg : Architect
-str company : amagi
+    str url : https://asdf.com
+    bool run : True
+    str mode : none
+    num age : 32.0234
+    [obj] offices : [
+        {
+            str location : blr
+            str desg : Architect
+            str company : amagi
+        }
+        {
+            str location : delhi
+            str desg : EM
+            str company : amagi
+        }
+    ]
 }
-{
-str location : delhi
-str desg : EM
-str company : amagi
-}
-]
-}
+
 obj female : {
-str url : https://efgh.com
-bool run : True
-str mode : none
-num age : 31.0234
+    str url : https://efgh.com
+    bool run : True
+    str mode : none
+    num age : 31.0234
 }
+
 str kid : qwerty
 num house : 148
-[num] dimensions : [25.0,51.0,25.0,51.0]
+[num] dimensions : [25.0, 51.0, 25.0, 51.0]
 ```
 
 ## Example Array of Objects Validation 
@@ -160,5 +164,5 @@ cat examples/output-d.json | jq -r .
 
 1. Add more validations at individual fields level
 2. Add validations for array and array of objects like length of array etc
-3. Add Object validations like allowed keys / required keys 
+3. Add object validations like allowed keys / required keys 
 4. Add required keys validation at top level
