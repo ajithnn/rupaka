@@ -46,14 +46,14 @@ configParser = ConfigPairs <$> manyTill cfgs eof
         strTerms  = typeTerm "[str]"  >> Strs     <$> P.try keys <*> P.try (sep >> many space  >> strArray <* eol)
         intTerms  = typeTerm "[num]"  >> Numerics <$> P.try keys <*> P.try (sep *> (many space >> intArray  <* eol ))
         boolTerms = typeTerm "[bool]" >> Booleans <$> P.try keys <*> P.try (sep *> (many space >> boolArray <* eol ))
-        objTerms = typeTerm "[obj]"   >> CObjects <$> P.try keys <*> P.try (sep *> (many space >> between (P.string "[\n") (P.string "]\n") (many objects) ))
+        objTerms = typeTerm "[obj]"   >> CObjects <$> P.try keys <*> P.try (sep *> (many space >> between (P.try (many space >> P.string "[\n")) (P.try (many space >> P.string "]\n")) (many objects) ))
         objTerm  = typeTerm "obj"     >> CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
         strArray  = splitOn "," <$> btwBrackets (many wordSpaces)
         intArray  = readNums . splitOn "," <$> btwBrackets (many numCommas)
         boolArray = readBools <$> btwBrackets boolCommas
         str =  P.try (many wordSpaces)
         wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',','])
-        objects = between (P.string "{\n") (P.string "}\n") (ConfigPairs <$> many cfgs)
+        objects = between (P.try (many space >> P.string "{\n")) (P.try (many space >> P.string "}\n")) (ConfigPairs <$> many cfgs)
 
 -- Validation Parser
 

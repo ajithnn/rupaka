@@ -1,1 +1,1 @@
-{"dimensions":[25,51,25,51],"female":{"age":31.0234,"mode":"none","run":true,"url":"https://efgh.com"},"house":148,"kid":"qwerty","male":{"age":32.0234,"mode":"none","office":{"company":"Amagi","desg":"Architect"},"run":true,"url":"https://asdf.com"}}
+{"dimensions":[25,51,25,51],"female":{"age":31.0234,"mode":"none","run":true,"url":"https://efgh.com"},"house":148,"kid":"qwerty","male":{"age":32.0234,"mode":"none","offices":[{"company":"amagi","desg":"Architect","location":"blr"},{"company":"amagi","desg":"EM","location":"delhi"}],"run":true,"url":"https://asdf.com"}}
