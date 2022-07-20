@@ -30,6 +30,36 @@
     - ">" is used to separate the hierarchy of keys
   - For [obj] types also use the same format as above and each of the objs in array is validated against
 
+
+### Supported Validations
+
+- String Validations
+  - str key matches ^regex$ : Validates if the value against the key matches the given regex (Regex support is limited : TODO : allow full fledged regex)
+  - str key>subkey>subkey matches ^regex$ : Validates if the value against the key.subkey.subkey matches regex (traverses objects)
+  - [str] key matches ^regex$ : Validates each value in the array of the key matches against the regex 
+  - str key not_matches ^regex$ : Ensures the value against the key does not matches the given regex (Regex support is limited : TODO : allow full fledged regex)
+  - str key>subkey>subkey not_matches ^regex$ : Ensures the value against the key.subkey.subkey does not matches regex (traverses objects)
+  - [str] key not_matches ^regex$ : Ensures each value in the array of the key does not matches against the regex 
+  - str key oneof enum1|enum2|enum3|enum4 : Ensures the value against the key is one the given enum values
+  - str key>subkey>subkey oneof enum1|enum2 : Ensures the value against the key.subkey.subkey is one of the given enum values(traverses objects)
+  - [str] key not_matches enum1|enum2|enum3|enum4 : Ensures each value in the array of the key is one of the given enum values 
+  - str key not_oneof enum1|enum2|enum3|enum4 : Ensures the value against the key is one the given enum values
+  - str key>subkey>subkey not_oneof enum1|enum2|enum3|enum4 : Ensures the value against the key.subkey.subkey is one of the given enum values(traverses objects)
+  - [str] key not_oneof enum1|enum2|enum3|enum4 : Ensures each value in the array of the key is one of the given enum values 
+  - str key length_gt number : Validates the length of the string value is greater than the given number
+    - Similarly length_gte,length_lt,length_lte,length_eq are also supported
+    - The above also works for sub-keys and arrays of strings as well
+- Numeric Validations 
+  - num key ( > |< | <= | >= | == ) value : Compares the key to value with the given operator
+    - Can use multiple conditions in separate lines to provide between conditions eg: < 20 , > 10 etc
+    - The same is supported
+    - for array of numbers and numbers inside object sub-keys
+- TODO Validations 
+  - Key validations : Add allowed key validations at top level and sub-key levels
+    - key k oneof allowedkeys 
+    - key k not_oneof allowedkeys
+  - Required Validation : Add required key at the top and sub key levels  
+
 ## Example Simple Config 
 
 ```
@@ -159,10 +189,11 @@ docker run --rm -i --mount type=bind,src="$(pwd)"/examples,dst=/app/rupaka/examp
 cat examples/output-d.json | jq -r .
 ```
 
-
 ## Roadmap 
 
 1. Add more validations at individual fields level
 2. Add validations for array and array of objects like length of array etc
 3. Add object validations like allowed keys / required keys 
 4. Add required keys validation at top level
+
+
