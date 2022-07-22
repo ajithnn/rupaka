@@ -54,10 +54,13 @@
     - Can use multiple conditions in separate lines to provide between conditions eg: < 20 , > 10 etc
     - The same is supported
     - for array of numbers and numbers inside object sub-keys
+
+- Key validations : Add allowed key validations at top level and sub-key levels
+  - key k allowed allowedkey1|allowedKey2|allowedKey3
+    - In the above expression k can also be a subkey path eg: top-key>sub-key>sub-key
+    - For top level keys use CONFIGROOTKEY in place of k
+
 - TODO Validations 
-  - Key validations : Add allowed key validations at top level and sub-key levels
-    - key k oneof allowedkeys 
-    - key k not_oneof allowedkeys
   - Required Validation : Add required key at the top and sub key levels  
 
 ## Example Simple Config 
