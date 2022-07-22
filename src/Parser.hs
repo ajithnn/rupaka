@@ -48,11 +48,9 @@ configParser = ConfigPairs <$> manyTill cfgs eof
         boolTerms = typeTerm "[bool]" >> Booleans <$> P.try keys <*> P.try (sep *> (many space >> boolArray <* eol ))
         objTerms  = typeTerm "[obj]"  >> CObjects <$> P.try keys <*> P.try (sep *> (many space >>  objArray (many objects)))
         objTerm   = typeTerm "obj"    >> CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
-        strArray  = splitOn "," <$> btwBrackets (many wordSpaces)
         intArray  = readNums . splitOn "," <$> btwBrackets (many numCommas)
         boolArray = readBools <$> btwBrackets boolCommas
         str =  P.try (many wordSpaces)
-        wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',','])
         objArray = between (P.try (many space >> P.string "[\n")) (P.try (many space >> P.string "]\n"))
         objects = between (P.try (many space >> P.string "{\n")) (P.try (many space >> P.string "}\n")) (ConfigPairs <$> many cfgs)
 
@@ -60,31 +58,39 @@ configParser = ConfigPairs <$> manyTill cfgs eof
 
 validationParser :: Parsec String () VldTriples
 validationParser = VldTriples <$> manyTill validations eof
-  where validations = validationsInt <|> validationsStr <|>  validationInt <|> validationStr
+  where validations = validationsInt <|> validationsStr <|>  validationsKey <|> validationInt <|> validationStr <|> validationKey
         validationInt   = typeTerm "num"    >> VNumeric   <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationStr   = typeTerm "str"    >> VStr       <$> P.try keys <*> strCond  <*> (strValidations <* eol)
+        validationKey   = typeTerm "key"    >> VKey       <$> P.try keys <*> keyCond  <*> (strValidations <* eol)
+        validationsKey  = typeTerm "[key]"  >> VKeys      <$> P.try keys <*> keysCond <*> (many space  >> strArray <* eol)
         validationsInt  = typeTerm "[num]"  >> VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationsStr  = typeTerm "[str]"  >> VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        cond =      fromString <$> P.try (many space >> many (oneOf ['>','<','=']))
-        strCond =   fromString <$> P.try (many space >> strConditions)
+        cond =      fromString  <$> P.try (many space >> many (oneOf ['>','<','=']))
+        strCond =   fromString  <$> P.try (many space >> strConditions)
+        keyCond =   fromString  <$> P.try (many space >> keyConditions)
+        keysCond =   fromString <$> P.try (many space >> keysConditions)
         boolsArr = bools `P.sepBy` P.char '|'
 
 -- Parser helpers
 
-eol =  P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
+eol   = P.try (string "\n\r") <|> P.try (string "\n\r") <|> P.try (string "\n") <|> P.try (string "\r") <?> "end of line"
 keys  = many space >> many word
-word = oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','>'])
-nums = oneOf (['0'..'9']++['.'])
-num = readNum <$> P.try (many nums)
+nums  = oneOf (['0'..'9']++['.'])
+num   = readNum  <$> P.try (many nums)
+bool  = readBool <$> P.try bools
+sep   = many space >> P.char ':'
+word  = oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','>'])
 bools = P.try (string "True") <|> P.try (string "true") <|> P.try (string "False") <|> P.try (string "false") <?> "boolean value, True or False"
-bool = readBool <$> P.try bools
-typeTerm typ = P.try (many space >> string typ)
-sep = many space >> P.char ':'
-numCommas = oneOf (['0'..'9']++['.',','])
-boolCommas = bools `P.sepBy` P.char ','
-btwBrackets vals = P.try (between (P.char '[') (P.char ']') vals)
 strValidations = many space >> P.try (many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$',':','/','\\','(',')','|'])))
-strConditions  =    P.try (string "not_matches")  <|>
+strArray  = splitOn "," <$> btwBrackets (many wordSpaces)
+wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',','])
+numCommas     = oneOf (['0'..'9']++['.',','])
+boolCommas    = bools `P.sepBy` P.char ','
+typeTerm typ  = P.try (many space >> string typ)
+keyConditions = P.try (string "allowed")
+keysConditions = P.try (string "required")
+btwBrackets vals  = P.try (between (P.char '[') (P.char ']') vals)
+strConditions     = P.try (string "not_matches")  <|>
                     P.try (string "not_oneof")    <|>
                     P.try (string "length_gt")    <|>
                     P.try (string "length_lt")    <|>

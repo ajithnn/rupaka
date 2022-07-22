@@ -28,22 +28,26 @@ newtype VldTriples = VldTriples [Triple] deriving (Show,Generic)
 data Triple = VStr Key Condition String      |
               VStrs Key Condition String     |
               VNumeric Key Condition Double  |
-              VNumerics Key Condition Double deriving (Generic)
+              VNumerics Key Condition Double |
+              VKey  Key Condition String     |
+              VKeys Key Condition [String] deriving (Generic)
 
 data Condition =  CGT |
                   CLT |
                   CLE |
                   CGE |
                   CEQ |
-                  MATCHES |
-                  ONEOF |
+                  MATCHES   |
+                  REQUIRED  |
+                  ALLOWED   |
+                  ONEOF     |
                   NOT_MATCHES |
-                  NOT_ONEOF |
-                  LENGTH_GT |
-                  LENGTH_GTE |
-                  LENGTH_LT |
-                  LENGTH_LTE |
-                  LENGTH_EQ |
+                  NOT_ONEOF   |
+                  LENGTH_GT   |
+                  LENGTH_GTE  |
+                  LENGTH_LT   |
+                  LENGTH_LTE  |
+                  LENGTH_EQ   |
                   None deriving (Eq,Ord,Generic)
 
 data InputOptions = InputOptions{
@@ -68,6 +72,9 @@ instance Show Triple where
   show (VNumerics k c v) = mconcat [show k, " ", show c, " ", show v]
   show (VStr k c v)      = mconcat [show k, " ", show c, " ", show v]
   show (VStrs k c v)     = mconcat [show k, " ", show c, " ", show v]
+  show (VKey k c v)      = mconcat [show k, " ", show c, " ", show v]
+  show (VKeys k c v)     = mconcat [show k, " ", show c, " ", show v]
+
 
 instance IsString Condition where
   fromString c = case c of
@@ -78,6 +85,8 @@ instance IsString Condition where
     "=="          -> CEQ
     "matches"     -> MATCHES
     "oneof"       -> ONEOF
+    "required"    -> REQUIRED
+    "allowed"     -> ALLOWED
     "not_matches" -> NOT_MATCHES
     "not_oneof"   -> NOT_ONEOF
     "length_gt"   -> LENGTH_GT
@@ -94,7 +103,9 @@ instance Show Condition where
   show CLE         = "<="
   show CEQ         = "=="
   show MATCHES     = "should match"
-  show ONEOF       = "shoube be one of"
+  show REQUIRED    = "needs required keys"
+  show ALLOWED     = "should have only allowed keys"
+  show ONEOF       = "should be one of"
   show NOT_MATCHES = "should not match"
   show NOT_ONEOF   = "should not be one of"
   show LENGTH_GT   = "length >"

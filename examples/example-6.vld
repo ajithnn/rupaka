@@ -1,0 +1,3 @@
+key CONFIGROOTKEY allowed male|female|kid|house|dimensions
+key male allowed url|run|offices|age|mode
+key male>offices allowed desg|company|location

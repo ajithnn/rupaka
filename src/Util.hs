@@ -21,6 +21,15 @@ extractNum _             = 0
 extractString (Str k v) = v
 extractString _         = ""
 
+extractKey (Str k v)      = k
+extractKey (Strs k v)     = k
+extractKey (Numeric k v)  = k
+extractKey (Numerics k v) = k
+extractKey (Boolean k v)  = k
+extractKey (Booleans k v) = k
+extractKey (CObject k v)  = k
+extractKey (CObjects k v) = k
+
 extractStrings (Strs k v) = v
 extractStrings _          = []
 
