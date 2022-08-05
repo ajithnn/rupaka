@@ -29,8 +29,7 @@ data Triple = VStr Key Condition String      |
               VStrs Key Condition String     |
               VNumeric Key Condition Double  |
               VNumerics Key Condition Double |
-              VKey  Key Condition String     |
-              VKeys Key Condition [String] deriving (Generic)
+              VKey Key Condition [String] deriving (Generic)
 
 data Condition =  CGT |
                   CLT |
@@ -73,7 +72,6 @@ instance Show Triple where
   show (VStr k c v)      = mconcat [show k, " ", show c, " ", show v]
   show (VStrs k c v)     = mconcat [show k, " ", show c, " ", show v]
   show (VKey k c v)      = mconcat [show k, " ", show c, " ", show v]
-  show (VKeys k c v)     = mconcat [show k, " ", show c, " ", show v]
 
 
 instance IsString Condition where

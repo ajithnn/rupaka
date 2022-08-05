@@ -58,17 +58,15 @@ configParser = ConfigPairs <$> manyTill cfgs eof
 
 validationParser :: Parsec String () VldTriples
 validationParser = VldTriples <$> manyTill validations eof
-  where validations = validationsInt <|> validationsStr <|>  validationsKey <|> validationInt <|> validationStr <|> validationKey
+  where validations = validationsInt <|> validationsStr <|> validationInt <|> validationStr <|> validationKey
         validationInt   = typeTerm "num"    >> VNumeric   <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationStr   = typeTerm "str"    >> VStr       <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        validationKey   = typeTerm "key"    >> VKey       <$> P.try keys <*> keyCond  <*> (strValidations <* eol)
-        validationsKey  = typeTerm "[key]"  >> VKeys      <$> P.try keys <*> keysCond <*> (many space  >> strArray <* eol)
+        validationKey   = typeTerm "key"    >> VKey       <$> P.try keys <*> keyCond <*> (many space  >> strArray <* eol)
         validationsInt  = typeTerm "[num]"  >> VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationsStr  = typeTerm "[str]"  >> VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
         cond =      fromString  <$> P.try (many space >> many (oneOf ['>','<','=']))
         strCond =   fromString  <$> P.try (many space >> strConditions)
         keyCond =   fromString  <$> P.try (many space >> keyConditions)
-        keysCond =   fromString <$> P.try (many space >> keysConditions)
         boolsArr = bools `P.sepBy` P.char '|'
 
 -- Parser helpers
@@ -87,8 +85,7 @@ wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',
 numCommas     = oneOf (['0'..'9']++['.',','])
 boolCommas    = bools `P.sepBy` P.char ','
 typeTerm typ  = P.try (many space >> string typ)
-keyConditions = P.try (string "allowed")
-keysConditions = P.try (string "required")
+keyConditions = P.try (string "allowed") <|> P.try (string "required")
 btwBrackets vals  = P.try (between (P.char '[') (P.char ']') vals)
 strConditions     = P.try (string "not_matches")  <|>
                     P.try (string "not_oneof")    <|>

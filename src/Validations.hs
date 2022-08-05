@@ -42,14 +42,13 @@ validator vld cfgM = resp
                 VNumeric {}  -> numValidator vld cfgM
                 VNumerics {} -> numValidator vld cfgM
                 VKey {}      -> keyValidator vld cfgM
-                VKeys {}     -> keyValidator vld cfgM
 
 keyValidator :: Triple -> [Pair] -> Bool
 keyValidator vld cfgM = res
   where splitStr = splitOn "|"
         res = case vld of
-                (VKey k ALLOWED v)    -> L.all (\vl -> extractKey vl `L.elem` splitStr v) (getPairs cfgM k)
-                (VKeys k REQUIRED v)  -> L.all ((\ ks -> L.null $ v L.\\ ks) . extractConfigPairKeys) (getConfigPairs (splitOn ">" k) [ConfigPairs cfgM])
+                (VKey k ALLOWED v)    -> L.all (\vl -> extractKey vl `L.elem` v) (getPairs cfgM k)
+                (VKey k REQUIRED v)  -> L.all ((\ ks -> L.null $ v L.\\ ks) . extractConfigPairKeys) (getConfigPairs (splitOn ">" k) [ConfigPairs cfgM])
                 _ -> False
 
 numValidator :: Triple -> [Pair] -> Bool
@@ -130,25 +129,3 @@ getOperator _   = \_ _ -> False
 
 checkLength k v cfgM f = L.all (\vl -> f ((Prelude.length . extractString) vl) (read v)) (getPairs cfgM k)
 checkAllStrings k v cfgM f lf rf negate = L.all (\vl -> negate (f (lf vl) (rf v))) (L.foldl (flip (++)) [] (L.map extractStrings (getPairs cfgM k)))
-
-
---ghci> cpairs1 = Prelude.head $ Prelude.map (\cfgM -> Prelude.head $ Prelude.filter (not . L.null) $ Prelude.map (\p -> extractObjects "male" p) cfgM) (Prelude.map extractConfigPairs cpairs)
---ghci> cpairs2 = Prelude.head $ Prelude.map (\cfgM -> Prelude.head $ Prelude.filter (not . L.null) $ Prelude.map (\p -> extractObjects "offices" p) cfgM) (Prelude.map extractConfigPairs cpairs1)
---ghci> cpairs2
---[ConfigPairs ["location" "blr","desg" "Architect"],ConfigPairs ["location" "delhi","desg" "EM","company" "amagi"]]
---ghci> :t cpairs2
---cpairs2 :: [ConfigPairs]
---ghci>
---ghci> Prelude.map extractConfigPairKeys cpairs2
---[["location","desg"],["location","desg","company"]]
---ghci> :t Prelude.map extractConfigPairKeys cpairs2
---Prelude.map extractConfigPairKeys cpairs2 :: [[Key]]
---ghci> Prelude.map extractConfigPairKeys cpairs1
---[["url","run","mode","age","offices"]]
---ghci> :info extractConfigPairs
---extractConfigPairs :: ConfigPairs -> [Pair]
---        -- Defined at <interactive>:61:1
---
-
-
-
