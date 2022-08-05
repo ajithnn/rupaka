@@ -30,6 +30,12 @@ extractKey (Booleans k v) = k
 extractKey (CObject k v)  = k
 extractKey (CObjects k v) = k
 
+extractObjects ky (CObject k v)  = [v | ky == k]
+extractObjects ky (CObjects k v)  | ky == k = v
+                                  | otherwise = []
+extractObjects _ _              = []
+
+
 extractStrings (Strs k v) = v
 extractStrings _          = []
 

@@ -49,7 +49,7 @@ keyValidator vld cfgM = res
   where splitStr = splitOn "|"
         res = case vld of
                 (VKey k ALLOWED v)    -> L.all (\vl -> extractKey vl `L.elem` splitStr v) (getPairs cfgM k)
-                (VKeys k REQUIRED v)  -> True
+                (VKeys k REQUIRED v)  -> L.all ((\ ks -> L.null $ v L.\\ ks) . extractConfigPairKeys) (getConfigPairs (splitOn ">" k) [ConfigPairs cfgM])
                 _ -> False
 
 numValidator :: Triple -> [Pair] -> Bool
@@ -91,6 +91,21 @@ getPairs cfgs ky | ky == "CONFIGROOTKEY" = cfgs
         splitKeys = splitOn ">" ky
         filteredPairs = pairs splitKeys cfgs
 
+-- L.all (\ks -> L.null (\ks -> L.null $ (splitOn "|" v) L.\\ ks) (Prelude.map extractConfigPairKeys (getConfigPairs (splitOn ">" key) [ConfigPairs cfgs]))
+
+getConfigPairs :: [Key] -> [ConfigPairs] -> [ConfigPairs]
+getConfigPairs [] _ = []
+getConfigPairs (k:ks) cpairs  | k == "CONFIGROOTKEY" = cpairs
+                              | otherwise = getConfigPairs ks (firstOf $ Prelude.map ((firstOf . Prelude.filter (not . L.null) . Prelude.map (extractObjects k)) . extractConfigPairs) cpairs)
+  where firstOf []     = []
+        firstOf (v:vs) = v
+
+extractConfigPairs :: ConfigPairs -> [Pair]
+extractConfigPairs (ConfigPairs p) = p
+
+extractConfigPairKeys :: ConfigPairs -> [Key]
+extractConfigPairKeys (ConfigPairs prs) = Prelude.map extractKey prs
+
 filterPairs :: Key -> Pair -> Maybe [Pair]
 filterPairs ky (Str k v)      = if ky == k then Just [Str k v] else Nothing
 filterPairs ky (Numeric k v)  = if ky == k then Just [Numeric k v] else Nothing
@@ -113,4 +128,25 @@ getOperator _   = \_ _ -> False
 
 checkLength k v cfgM f = L.all (\vl -> f ((Prelude.length . extractString) vl) (read v)) (getPairs cfgM k)
 checkAllStrings k v cfgM f lf rf negate = L.all (\vl -> negate (f (lf vl) (rf v))) (L.foldl (flip (++)) [] (L.map extractStrings (getPairs cfgM k)))
+
+
+--ghci> cpairs1 = Prelude.head $ Prelude.map (\cfgM -> Prelude.head $ Prelude.filter (not . L.null) $ Prelude.map (\p -> extractObjects "male" p) cfgM) (Prelude.map extractConfigPairs cpairs)
+--ghci> cpairs2 = Prelude.head $ Prelude.map (\cfgM -> Prelude.head $ Prelude.filter (not . L.null) $ Prelude.map (\p -> extractObjects "offices" p) cfgM) (Prelude.map extractConfigPairs cpairs1)
+--ghci> cpairs2
+--[ConfigPairs ["location" "blr","desg" "Architect"],ConfigPairs ["location" "delhi","desg" "EM","company" "amagi"]]
+--ghci> :t cpairs2
+--cpairs2 :: [ConfigPairs]
+--ghci>
+--ghci> Prelude.map extractConfigPairKeys cpairs2
+--[["location","desg"],["location","desg","company"]]
+--ghci> :t Prelude.map extractConfigPairKeys cpairs2
+--Prelude.map extractConfigPairKeys cpairs2 :: [[Key]]
+--ghci> Prelude.map extractConfigPairKeys cpairs1
+--[["url","run","mode","age","offices"]]
+--ghci> :info extractConfigPairs
+--extractConfigPairs :: ConfigPairs -> [Pair]
+--        -- Defined at <interactive>:61:1
+--
+
+
 
