@@ -96,9 +96,11 @@ getPairs cfgs ky | ky == "CONFIGROOTKEY" = cfgs
 getConfigPairs :: [Key] -> [ConfigPairs] -> [ConfigPairs]
 getConfigPairs [] _ = []
 getConfigPairs (k:ks) cpairs  | k == "CONFIGROOTKEY" = cpairs
-                              | otherwise = getConfigPairs ks (firstOf $ Prelude.map ((firstOf . Prelude.filter (not . L.null) . Prelude.map (extractObjects k)) . extractConfigPairs) cpairs)
+                              | L.null ks = matchKeys k 
+                              | otherwise = getConfigPairs ks (matchKeys k)
   where firstOf []     = []
         firstOf (v:vs) = v
+        matchKeys k = (firstOf $ Prelude.map ((firstOf . Prelude.filter (not . L.null) . Prelude.map (extractObjects k)) . extractConfigPairs) cpairs)
 
 extractConfigPairs :: ConfigPairs -> [Pair]
 extractConfigPairs (ConfigPairs p) = p

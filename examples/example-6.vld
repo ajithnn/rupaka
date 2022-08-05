@@ -3,3 +3,4 @@ key male allowed url|run|offices|age|mode
 key male>offices allowed desg|company|location
 [key] CONFIGROOTKEY required [male,female,house,kid,dimensions]
 [key] male>offices required [company]
+[key] male required [url,age]
