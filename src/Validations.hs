@@ -100,7 +100,7 @@ getConfigPairs (k:ks) cpairs  | k == "CONFIGROOTKEY" = cpairs
                               | otherwise = getConfigPairs ks (matchKeys k)
   where firstOf []     = []
         firstOf (v:vs) = v
-        matchKeys k = (firstOf $ Prelude.map ((firstOf . Prelude.filter (not . L.null) . Prelude.map (extractObjects k)) . extractConfigPairs) cpairs)
+        matchKeys k = firstOf $ Prelude.map ((firstOf . Prelude.filter (not . L.null) . Prelude.map (extractObjects k)) . extractConfigPairs) cpairs
 
 extractConfigPairs :: ConfigPairs -> [Pair]
 extractConfigPairs (ConfigPairs p) = p
