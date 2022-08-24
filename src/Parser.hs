@@ -39,15 +39,15 @@ compileValid fp = do
 
 configParser :: Parsec String () ConfigPairs
 configParser = ConfigPairs <$> manyTill cfgs eof
-  where cfgs      = objTerms <|> strTerms <|> intTerms <|> boolTerms <|> objTerm <|> intTerm <|> boolTerm <|> strTerm
-        strTerm   = typeTerm "str"    >> Str      <$> P.try keys <*> P.try (sep >> many space  >> str  <* eol)
-        intTerm   = typeTerm "num"    >> Numeric  <$> P.try keys <*> P.try (sep *> (many space >> num  <* eol ))
-        boolTerm  = typeTerm "bool"   >> Boolean  <$> P.try keys <*> P.try (sep *> (many space >> bool <* eol ))
-        strTerms  = typeTerm "[str]"  >> Strs     <$> P.try keys <*> P.try (sep >> many space  >> strArray <* eol)
-        intTerms  = typeTerm "[num]"  >> Numerics <$> P.try keys <*> P.try (sep *> (many space >> intArray  <* eol ))
-        boolTerms = typeTerm "[bool]" >> Booleans <$> P.try keys <*> P.try (sep *> (many space >> boolArray <* eol ))
-        objTerms  = typeTerm "[obj]"  >> CObjects <$> P.try keys <*> P.try (sep *> (many space >>  objArray (many objects)))
-        objTerm   = typeTerm "obj"    >> CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
+  where cfgs      = P.try objTerms <|> P.try strTerms <|> P.try intTerms <|> P.try boolTerms <|> P.try objTerm <|> P.try intTerm <|> P.try boolTerm <|> P.try strTerm
+        strTerm   = Str      <$> P.try keys <*> P.try (sep >> many space  >> str  <* eol)
+        intTerm   = Numeric  <$> P.try keys <*> P.try (sep *> (many space >> num  <* eol ))
+        boolTerm  = Boolean  <$> P.try keys <*> P.try (sep *> (many space >> bool <* eol ))
+        strTerms  = Strs     <$> P.try keys <*> P.try (sep >> many space  >> strArray <* eol)
+        intTerms  = Numerics <$> P.try keys <*> P.try (sep *> (many space >> intArray  <* eol ))
+        boolTerms = Booleans <$> P.try keys <*> P.try (sep *> (many space >> boolArray <* eol ))
+        objTerms  = CObjects <$> P.try keys <*> P.try (sep *> (many space >>  objArray (many objects)))
+        objTerm   = CObject  <$> P.try keys <*> P.try (sep *> (many space >> objects ))
         intArray  = readNums . splitOn "," <$> btwBrackets (many numCommas)
         boolArray = readBools <$> btwBrackets boolCommas
         str =  P.try (many wordSpaces)
@@ -58,12 +58,10 @@ configParser = ConfigPairs <$> manyTill cfgs eof
 
 validationParser :: Parsec String () VldTriples
 validationParser = VldTriples <$> manyTill validations eof
-  where validations = validationsInt <|> validationsStr <|> validationInt <|> validationStr <|> validationKey
-        validationInt   = typeTerm "num"    >> VNumeric   <$> P.try keys <*> cond     <*> (many space >> num <* eol)
-        validationStr   = typeTerm "str"    >> VStr       <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        validationKey   = typeTerm "key"    >> VKey       <$> P.try keys <*> keyCond <*> (many space  >> strArray <* eol)
-        validationsInt  = typeTerm "[num]"  >> VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
-        validationsStr  = typeTerm "[str]"  >> VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
+  where validations = P.try validationsInt <|> P.try validationsStr <|> P.try validationKey
+        validationKey   = VKey       <$> P.try keys <*> keyCond <*> (many space  >> strArray <* eol)
+        validationsInt  = VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
+        validationsStr  = VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
         cond =      fromString  <$> P.try (many space >> many (oneOf ['>','<','=']))
         strCond =   fromString  <$> P.try (many space >> strConditions)
         keyCond =   fromString  <$> P.try (many space >> keyConditions)

@@ -1,6 +1,6 @@
-num  age < 40
-str  url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
-str  mode oneof temporary|permanent|none
-[str] vegetables not_oneof tomato|potato|ocra|onion|carrot|capsicum|radish
-[str] vegetables oneof pumpkin|corn|broccoli|cabbage
-[num]  ages > 0
+age < 40
+url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+mode oneof temporary|permanent|none
+vegetables not_oneof tomato|potato|ocra|onion|carrot|capsicum|radish
+vegetables oneof pumpkin|corn|broccoli|cabbage
+ages > 0

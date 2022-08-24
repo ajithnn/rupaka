@@ -15,12 +15,6 @@ import           Types
 extractBool (Boolean k v) = v
 extractBool _             = False
 
-extractNum (Numeric k v) = v
-extractNum _             = 0
-
-extractString (Str k v) = v
-extractString _         = ""
-
 extractKey (Str k v)      = k
 extractKey (Strs k v)     = k
 extractKey (Numeric k v)  = k
@@ -35,11 +29,12 @@ extractObjects ky (CObjects k v)  | ky == k = v
                                   | otherwise = []
 extractObjects _ _              = []
 
-
 extractStrings (Strs k v) = v
+extractStrings (Str k v) = [v]
 extractStrings _          = []
 
 extractNums (Numerics k v) = v
+extractNums (Numeric k v)  = [v]
 extractNums _              = []
 
 extractBools (Booleans k v) = v

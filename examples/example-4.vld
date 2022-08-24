@@ -1,4 +1,4 @@
-str kid matches ^[a-z]+$
-str male>office>company not_matches ^[A-Z]+$
-str male>office>company matches ^[a-z]+$
-str female>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+kid matches ^[a-z]+$
+male>office>company not_matches ^[A-Z]+$
+male>office>company matches ^[a-z]+$
+female>url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$

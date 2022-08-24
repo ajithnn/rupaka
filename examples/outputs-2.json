@@ -1,1 +1,1 @@
-{"age":32.0234,"ages":[1,2,3,4,5],"mode":"none","predicates":[true,false,true,true],"run":true,"url":"https://ajithnn.com","vegetables":["cabbage","corn","pumpkin"]}
+{"age":32.0234,"ages":["1","2","3","4","5"],"mode":"none","predicates":["True","False","True","True"],"run":true,"url":"https://ajithnn.com","vegetables":["cabbage","corn","pumpkin"]}

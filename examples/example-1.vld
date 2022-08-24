@@ -1,4 +1,4 @@
-num  age < 40
-str  url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
-str  mode not_oneof permanent|none
-str  mode oneof permanent|none|temporary
+age < 40
+url matches ^http(s)*:\/\/[a-z]+\.(com|in|net)$
+mode not_oneof permanent|none
+mode oneof permanent|none|temporary

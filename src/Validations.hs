@@ -37,9 +37,7 @@ validator vld cfgM = resp
   where resp  | res = Right True
               | otherwise = Left $ mconcat ["Failed - ", show vld]
         res = case vld of
-                VStr {}      -> strValidator vld cfgM
                 VStrs {}     -> strValidator vld cfgM
-                VNumeric {}  -> numValidator vld cfgM
                 VNumerics {} -> numValidator vld cfgM
                 VKey {}      -> keyValidator vld cfgM
 
@@ -54,7 +52,6 @@ keyValidator vld cfgM = res
 numValidator :: Triple -> [Pair] -> Bool
 numValidator vld cfgM = res
   where res = case vld of
-                (VNumeric k c v)  -> L.all (\vl -> getOperator c (extractNum vl) v) (getPairs cfgM k)
                 (VNumerics k c v) -> L.all (\vl -> getOperator c vl v) (L.foldl (flip (++)) [] (L.map extractNums (getPairs cfgM k)))
                 _ -> False
 
@@ -62,15 +59,6 @@ strValidator :: Triple -> [Pair] -> Bool
 strValidator vld cfgM = res
   where splitStr = splitOn "|"
         res =  case vld of
-                (VStr k MATCHES v)      -> L.all (\vl -> extractString vl TRT.=~ v :: Bool) (getPairs cfgM k)
-                (VStr k NOT_MATCHES v)  -> L.all (\vl -> not (extractString vl TRT.=~ v :: Bool)) (getPairs cfgM k)
-                (VStr k ONEOF v)        -> L.all (\vl -> extractString vl `L.elem` splitStr v) (getPairs cfgM k)
-                (VStr k NOT_ONEOF v)    -> L.all (\vl -> extractString vl `L.notElem` splitStr v) (getPairs cfgM k)
-                (VStr k LENGTH_GT v)    -> checkLength k v cfgM (>)
-                (VStr k LENGTH_GTE v)   -> checkLength k v cfgM (>=)
-                (VStr k LENGTH_LT v)    -> checkLength k v cfgM (<)
-                (VStr k LENGTH_LTE v)   -> checkLength k v cfgM (<=)
-                (VStr k LENGTH_EQ v)    -> checkLength k v cfgM (==)
                 (VStrs k MATCHES v)     -> checkAllStrings k v cfgM (TRT.=~) id id id
                 (VStrs k ONEOF v)       -> checkAllStrings k v cfgM L.elem id splitStr id
                 (VStrs k NOT_MATCHES v) -> checkAllStrings k v cfgM (TRT.=~) id id not
@@ -127,5 +115,4 @@ getOperator CGE = (>=)
 getOperator CEQ = (==)
 getOperator _   = \_ _ -> False
 
-checkLength k v cfgM f = L.all (\vl -> f ((Prelude.length . extractString) vl) (read v)) (getPairs cfgM k)
 checkAllStrings k v cfgM f lf rf negate = L.all (\vl -> negate (f (lf vl) (rf v))) (L.foldl (flip (++)) [] (L.map extractStrings (getPairs cfgM k)))
