@@ -62,9 +62,9 @@ validationParser = VldTriples <$> manyTill validations eof
         validationKey   = VKey       <$> P.try keys <*> keyCond <*> (many space  >> strArray <* eol)
         validationsInt  = VNumerics  <$> P.try keys <*> cond     <*> (many space >> num <* eol)
         validationsStr  = VStrs      <$> P.try keys <*> strCond  <*> (strValidations <* eol)
-        cond =      fromString  <$> P.try (many space >> many (oneOf ['>','<','=']))
-        strCond =   fromString  <$> P.try (many space >> strConditions)
-        keyCond =   fromString  <$> P.try (many space >> keyConditions)
+        cond            = fromString <$> P.try (many space >> many (oneOf ['>','<','=']))
+        strCond         = fromString <$> P.try (many space >> strConditions)
+        keyCond         = fromString <$> P.try (many space >> keyConditions)
         boolsArr = bools `P.sepBy` P.char '|'
 
 -- Parser helpers
@@ -75,15 +75,15 @@ nums  = oneOf (['0'..'9']++['.'])
 num   = readNum  <$> P.try (many nums)
 bool  = readBool <$> P.try bools
 sep   = many space >> P.char ':'
-word  = oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','>'])
-bools = P.try (string "True") <|> P.try (string "true") <|> P.try (string "False") <|> P.try (string "false") <?> "boolean value, True or False"
-strValidations = many space >> P.try (many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']','+','*','^','$',':','/','\\','(',')','|'])))
-strArray  = splitOn "," <$> btwBrackets (many wordSpaces)
-wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',','])
-numCommas     = oneOf (['0'..'9']++['.',','])
+word  = oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','>']) <?> "valid word"
+bools = P.try (string "True") <|> P.try (string "true") <|> P.try (string "False") <|> P.try (string "false") <?> "boolean value"
+regex = ['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\\','<','>']
+strValidations = many space >> P.try (many (oneOf (['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.','[',']',':','/','!']++regex))) <?> "valid string"
+strArray  = splitOn "," <$> btwBrackets (many wordSpaces) 
+wordSpaces = oneOf(['a'..'z']++['A'..'Z']++['0'..'9']++['_','-','.',' ','/',':',';',',','?','{','}','!','@','#','$','%','^','&','*','(',')','+','=']) <?> "valid words"
+numCommas     = oneOf (['0'..'9']++['.',',']) <?> "number or array of numbers"
 boolCommas    = bools `P.sepBy` P.char ','
-typeTerm typ  = P.try (many space >> string typ)
-keyConditions = P.try (string "allowed") <|> P.try (string "required")
+keyConditions = P.try (string "allowed") <|> P.try (string "required") <?> "valid key condition allowed|required"
 btwBrackets vals  = P.try (between (P.char '[') (P.char ']') vals)
 strConditions     = P.try (string "not_matches")  <|>
                     P.try (string "not_oneof")    <|>
@@ -93,4 +93,5 @@ strConditions     = P.try (string "not_matches")  <|>
                     P.try (string "length_lte")   <|>
                     P.try (string "length_eq")    <|>
                     P.try (string "matches")      <|>
-                    P.try (string "oneof")
+                    P.try (string "oneof")        <?> 
+                    "valid conditions not_matches|not_oneof|length_gt|length_lt|length_gte|length_lte|length_eq|matches|oneof"

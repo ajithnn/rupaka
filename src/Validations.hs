@@ -20,9 +20,9 @@ import           Types
 import           Util
 
 validate :: Either String VldTriples -> Either String ConfigPairs -> Either String Bool
-validate (Left er) (Left e) = Left (mconcat [er," \n",e])
-validate (Left e) _ = Left e
-validate _ (Left e) = Left e
+validate (Left er) (Left e) = Left (mconcat ["------------ \nValidation error: \n",er," \n ------------ \nConfig error: \n",e])
+validate (Left e) _ = Left (mconcat ["------------ \nValidation error: \n",e])
+validate _ (Left e) = Left (mconcat ["------------ \nConfig error: \n",e])
 validate (Right (VldTriples validations)) (Right (ConfigPairs configs)) = validated
   where validated = Prelude.foldl (\acc v -> combineValidations (validator v configs) acc) (Right True) validations
 
